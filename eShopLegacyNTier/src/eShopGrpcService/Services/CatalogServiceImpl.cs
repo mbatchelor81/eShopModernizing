@@ -50,7 +50,7 @@ public class CatalogServiceImpl : CatalogGrpc.CatalogGrpcBase
 
     public override async Task<CatalogItemListResponse> GetCatalogItems(GetCatalogItemsRequest request, ServerCallContext context)
     {
-        var items = await _db.CatalogItems.ToListAsync();
+        var items = await _db.CatalogItems.Include(x => x.CatalogBrand).Include(x => x.CatalogType).ToListAsync();
 
         bool brandFilterIsNull = request.BrandIdFilter == 0;
         bool typeFilterIsNull = request.TypeIdFilter == 0;
@@ -114,7 +114,7 @@ public class CatalogServiceImpl : CatalogGrpc.CatalogGrpcBase
         }
         else
         {
-            var maxId = await _db.CatalogItemsStocks.MaxAsync(i => i.StockId);
+            var maxId = await _db.CatalogItemsStocks.Select(i => (int?)i.StockId).MaxAsync() ?? 0;
             var stock = new CatalogItemsStock
             {
                 StockId = maxId + 1,
@@ -131,7 +131,7 @@ public class CatalogServiceImpl : CatalogGrpc.CatalogGrpcBase
 
     public override async Task<Empty> CreateCatalogItem(CatalogItemMessage request, ServerCallContext context)
     {
-        var maxId = await _db.CatalogItems.MaxAsync(i => i.Id);
+        var maxId = await _db.CatalogItems.Select(i => (int?)i.Id).MaxAsync() ?? 0;
         var item = new CatalogItem
         {
             Id = maxId + 1,
