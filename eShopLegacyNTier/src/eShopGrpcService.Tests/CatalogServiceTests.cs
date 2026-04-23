@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Grpc.Core;
 using Grpc.Core.Testing;
+using Google.Protobuf.WellKnownTypes;
 using eShopGrpcService.Models;
 using eShopGrpcService.Models.Infrastructure;
 using eShopGrpcService.Services;
@@ -48,7 +49,8 @@ public class CatalogServiceTests
         var request = new FindCatalogItemRequest { Id = 1 };
         var response = await service.FindCatalogItem(request, callContext);
 
-        Assert.Equal(".NET Bot Black Hoodie", response.Name);
+        Assert.True(response.Found);
+        Assert.Equal(".NET Bot Black Hoodie", response.CatalogItem.Name);
     }
 
     [Fact]
@@ -62,8 +64,7 @@ public class CatalogServiceTests
         var request = new FindCatalogItemRequest { Id = 999 };
         var response = await service.FindCatalogItem(request, callContext);
 
-        Assert.Equal(0, response.Id);
-        Assert.Empty(response.Name);
+        Assert.False(response.Found);
     }
 
     [Fact]
@@ -77,7 +78,7 @@ public class CatalogServiceTests
         var request = new Empty();
         var response = await service.GetCatalogBrands(request, callContext);
 
-        Assert.Equal(5, response.Brands.Count);
+        Assert.Equal(5, response.CatalogBrands.Count);
     }
 
     [Fact]
@@ -88,11 +89,11 @@ public class CatalogServiceTests
         var service = new CatalogServiceImpl(context);
         var callContext = CreateTestCallContext();
 
-        var request = new GetCatalogItemsRequest { CatalogBrandId = 2, CatalogTypeId = 0 };
+        var request = new GetCatalogItemsRequest { BrandIdFilter = 2, TypeIdFilter = 0 };
         var response = await service.GetCatalogItems(request, callContext);
 
-        Assert.All(response.Items, item => Assert.Equal(2, item.CatalogBrandId));
-        Assert.True(response.Items.Count > 0);
+        Assert.All(response.CatalogItems, item => Assert.Equal(2, item.CatalogBrandId));
+        Assert.True(response.CatalogItems.Count > 0);
     }
 
     [Fact]
@@ -103,10 +104,10 @@ public class CatalogServiceTests
         var service = new CatalogServiceImpl(context);
         var callContext = CreateTestCallContext();
 
-        var request = new GetCatalogItemsRequest { CatalogBrandId = 0, CatalogTypeId = 0 };
+        var request = new GetCatalogItemsRequest { BrandIdFilter = 0, TypeIdFilter = 0 };
         var response = await service.GetCatalogItems(request, callContext);
 
-        Assert.Equal(12, response.Items.Count);
+        Assert.Equal(12, response.CatalogItems.Count);
     }
 
     [Fact]
@@ -120,7 +121,7 @@ public class CatalogServiceTests
         var request = new Empty();
         var response = await service.GetCatalogTypes(request, callContext);
 
-        Assert.Equal(4, response.Types.Count);
+        Assert.Equal(4, response.CatalogTypes.Count);
     }
 
     [Fact]
@@ -133,7 +134,7 @@ public class CatalogServiceTests
 
         var request = new GetAvailableStockRequest
         {
-            Date = "2017-09-20",
+            Date = Timestamp.FromDateTime(new DateTime(2017, 9, 20, 0, 0, 0, DateTimeKind.Utc)),
             CatalogItemId = 1
         };
         var response = await service.GetAvailableStock(request, callContext);
@@ -154,10 +155,11 @@ public class CatalogServiceTests
         var request = new CreateAvailableStockRequest
         {
             CatalogItemId = 3,
-            Date = "2017-10-01",
-            AvailableStock = 50
+            Date = Timestamp.FromDateTime(new DateTime(2017, 10, 1, 0, 0, 0, DateTimeKind.Utc)),
+            AvailableStock = 50,
+            StockId = 100
         };
-        var response = await service.CreateAvailableStock(request, callContext);
+        await service.CreateAvailableStock(request, callContext);
 
         var newCount = context.CatalogItemsStocks.Count();
         Assert.Equal(initialCount + 1, newCount);
@@ -173,20 +175,20 @@ public class CatalogServiceTests
 
         var initialCount = context.CatalogItems.Count();
 
-        var request = new CreateCatalogItemRequest
+        var request = new CatalogItemMessage
         {
+            Id = 100,
             CatalogTypeId = 1,
             CatalogBrandId = 1,
             Description = "Test Item",
             Name = "Test Item",
             Price = 9.99,
-            Picturefilename = "test.png"
+            PictureFilename = "test.png"
         };
-        var response = await service.CreateCatalogItem(request, callContext);
+        await service.CreateCatalogItem(request, callContext);
 
         var newCount = context.CatalogItems.Count();
         Assert.Equal(initialCount + 1, newCount);
-        Assert.Equal("Test Item", response.Name);
     }
 
     [Fact]
@@ -199,8 +201,8 @@ public class CatalogServiceTests
 
         var initialCount = context.CatalogItems.Count();
 
-        var request = new RemoveCatalogItemRequest { Id = 1 };
-        var response = await service.RemoveCatalogItem(request, callContext);
+        var request = new CatalogItemMessage { Id = 1 };
+        await service.RemoveCatalogItem(request, callContext);
 
         var newCount = context.CatalogItems.Count();
         Assert.Equal(initialCount - 1, newCount);
