@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Globalization;
 using System.Linq;
 using eShopGrpcService;
 using eShopWinForms.eShopServiceReference;
@@ -116,7 +117,7 @@ namespace eShopWinForms.GrpcClient
                 Id = msg.Id,
                 Description = msg.Description,
                 Name = msg.Name,
-                Price = decimal.Parse(msg.Price),
+                Price = decimal.Parse(msg.Price, CultureInfo.InvariantCulture),
                 Picturefilename = msg.Picturefilename,
                 CatalogBrandId = msg.CatalogBrandId,
                 CatalogTypeId = msg.CatalogTypeId,
@@ -150,7 +151,7 @@ namespace eShopWinForms.GrpcClient
                 Id = item.Id,
                 Description = item.Description ?? string.Empty,
                 Name = item.Name ?? string.Empty,
-                Price = item.Price.ToString(),
+                Price = item.Price.ToString(CultureInfo.InvariantCulture),
                 Picturefilename = item.Picturefilename ?? string.Empty,
                 CatalogBrandId = item.CatalogBrandId,
                 CatalogTypeId = item.CatalogTypeId

@@ -1,3 +1,4 @@
+using System.Globalization;
 using eShopGrpcService.Data;
 using eShopGrpcService.Models;
 using Google.Protobuf.WellKnownTypes;
@@ -103,35 +104,60 @@ public class CatalogGrpcService : eShopGrpcService.CatalogService.CatalogService
         }
         else
         {
-            var maxId = await _db.CatalogItemsStocks.AnyAsync()
-                ? await _db.CatalogItemsStocks.MaxAsync(i => i.StockId)
-                : 0;
-
-            var stock = new CatalogItemsStock
+            var inserted = false;
+            while (!inserted)
             {
-                StockId = maxId + 1,
-                Date = date,
-                CatalogItemId = request.CatalogItemId,
-                AvailableStock = request.AvailableStock,
-            };
-            _db.CatalogItemsStocks.Add(stock);
-        }
+                var maxId = await _db.CatalogItemsStocks.AnyAsync()
+                    ? await _db.CatalogItemsStocks.MaxAsync(i => i.StockId)
+                    : 0;
 
-        await _db.SaveChangesAsync();
+                var stock = new CatalogItemsStock
+                {
+                    StockId = maxId + 1,
+                    Date = date,
+                    CatalogItemId = request.CatalogItemId,
+                    AvailableStock = request.AvailableStock,
+                };
+                _db.CatalogItemsStocks.Add(stock);
+                try
+                {
+                    await _db.SaveChangesAsync();
+                    inserted = true;
+                }
+                catch (DbUpdateException)
+                {
+                    _db.Entry(stock).State = EntityState.Detached;
+                }
+            }
+        }
         return new Empty();
     }
 
     public override async Task<Empty> CreateCatalogItem(
         CatalogItemMessage request, ServerCallContext context)
     {
-        var maxId = await _db.CatalogItems.AnyAsync()
-            ? await _db.CatalogItems.MaxAsync(i => i.Id)
-            : 0;
-
         var item = CatalogMapper.ToEntity(request);
-        item.Id = maxId + 1;
-        _db.CatalogItems.Add(item);
-        await _db.SaveChangesAsync();
+
+        var saved = false;
+        while (!saved)
+        {
+            var maxId = await _db.CatalogItems.AnyAsync()
+                ? await _db.CatalogItems.MaxAsync(i => i.Id)
+                : 0;
+            item.Id = maxId + 1;
+
+            _db.CatalogItems.Add(item);
+            try
+            {
+                await _db.SaveChangesAsync();
+                saved = true;
+            }
+            catch (DbUpdateException)
+            {
+                _db.Entry(item).State = EntityState.Detached;
+            }
+        }
+
         return new Empty();
     }
 
@@ -143,7 +169,7 @@ public class CatalogGrpcService : eShopGrpcService.CatalogService.CatalogService
         {
             existing.Description = request.Description;
             existing.Name = request.Name;
-            existing.Price = decimal.Parse(request.Price);
+            existing.Price = decimal.Parse(request.Price, CultureInfo.InvariantCulture);
             existing.Picturefilename = request.Picturefilename;
             existing.CatalogBrandId = request.CatalogBrandId;
             existing.CatalogTypeId = request.CatalogTypeId;
