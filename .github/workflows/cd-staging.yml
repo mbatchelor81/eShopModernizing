@@ -32,12 +32,15 @@ jobs:
       - name: Determine tag
         id: tag
         shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_TAG: ${{ github.event.inputs.image-tag }}
+          COMMIT_SHA: ${{ github.sha }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "value=${{ github.event.inputs.image-tag }}" >> "$GITHUB_OUTPUT"
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "value=${INPUT_TAG}" >> "$GITHUB_OUTPUT"
           else
-            SHA="${{ github.sha }}"
-            echo "value=${SHA:0:7}" >> "$GITHUB_OUTPUT"
+            echo "value=${COMMIT_SHA:0:7}" >> "$GITHUB_OUTPUT"
           fi
 
   terraform:

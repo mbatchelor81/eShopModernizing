@@ -12,7 +12,7 @@ resource "azurerm_subnet" "aks" {
   virtual_network_name = azurerm_virtual_network.main.name
   address_prefixes     = [var.aks_subnet_prefix]
 
-  service_endpoints = ["Microsoft.Sql"]
+  service_endpoints = ["Microsoft.Sql", "Microsoft.KeyVault"]
 }
 
 resource "azurerm_subnet" "database" {

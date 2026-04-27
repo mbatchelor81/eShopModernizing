@@ -53,6 +53,7 @@ module "secrets" {
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
   resource_prefix     = local.resource_prefix
+  subnet_ids          = [module.networking.aks_subnet_id]
   tags                = local.common_tags
 }
 

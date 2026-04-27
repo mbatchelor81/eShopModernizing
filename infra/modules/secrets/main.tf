@@ -32,7 +32,8 @@ resource "azurerm_key_vault" "main" {
   }
 
   network_acls {
-    default_action = "Deny"
-    bypass         = "AzureServices"
+    default_action             = "Deny"
+    bypass                     = "AzureServices"
+    virtual_network_subnet_ids = var.subnet_ids
   }
 }
