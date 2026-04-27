@@ -14,7 +14,7 @@ if (Test-Path $webConfig) {
 
     # Replace connection string if provided via environment variable
     if ($env:ConnectionString) {
-        $content = $content -replace '(?<=name="CatalogDBContext"\s+connectionString=")[^"]*', $env:ConnectionString
+        $content = $content -replace '(?<=name="CatalogDBContext"\s+connectionString=")[^"]*', [regex]::Escape($env:ConnectionString)
         Write-Host "Replaced CatalogDBContext connection string in Web.config"
     }
 
