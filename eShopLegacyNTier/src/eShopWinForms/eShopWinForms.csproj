@@ -91,6 +91,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
+    <Compile Include="GrpcClient\CatalogGrpcClientWrapper.cs" />
     <Compile Include="Controllers\CatalogController.cs" />
     <Compile Include="Controllers\ICatalogView.cs" />
     <Compile Include="Program.cs" />
@@ -275,6 +276,11 @@
   </ItemGroup>
   <ItemGroup>
     <WCFMetadataStorage Include="Connected Services\eShopServiceReference\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\eShopGrpcClient\eShopGrpcClient.csproj">
+      <Name>eShopGrpcClient</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
