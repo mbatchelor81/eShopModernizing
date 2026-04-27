@@ -1,0 +1,70 @@
+# Production overrides — use with: docker compose -f docker-compose.yml -f docker-compose.production.yml up -d
+services:
+  catalog-api:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-mbatchelor81}/eshop-catalog-api:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__CatalogDb=${CATALOG_DB_CONNECTION_STRING}
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    ports:
+      - "5000:8080"
+      - "5001:8081"
+
+  catalog-web:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-mbatchelor81}/eshop-catalog-web:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.25"
+          memory: 64M
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - CatalogApi__BaseUrl=http://catalog-api:8080
+      - CatalogApiBaseUrl=http://catalog-api:8080
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    ports:
+      - "80:8080"
+    depends_on:
+      - catalog-api
+
+  sqlserver:
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+        reservations:
+          cpus: "0.5"
+          memory: 1G
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${MSSQL_SA_PASSWORD}
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    # No port mapping — internal only in production
+    ports: !override []

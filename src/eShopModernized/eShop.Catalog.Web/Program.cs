@@ -26,6 +26,8 @@ builder.Services.AddHttpClient<ICatalogApiClient, CatalogApiClient>(client =>
 
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
@@ -42,6 +44,8 @@ app.UseRouting();
 // EM-84: Authentication & Authorization middleware
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapHealthChecks("/health");
 
 app.MapControllerRoute(
     name: "default",

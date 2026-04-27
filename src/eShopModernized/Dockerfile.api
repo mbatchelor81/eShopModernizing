@@ -1,6 +1,6 @@
 # =============================================================================
-# Dockerfile — Default build (Catalog API)
-# For service-specific images, use Dockerfile.api or Dockerfile.web
+# Dockerfile.api — eShop Catalog API (REST + gRPC)
+# Multi-stage build targeting .NET 8 on Linux
 # =============================================================================
 
 # Stage 1: Build
@@ -16,7 +16,7 @@ COPY eShop.Catalog.Web/eShop.Catalog.Web.csproj eShop.Catalog.Web/
 COPY eShop.Catalog.Client/eShop.Catalog.Client.csproj eShop.Catalog.Client/
 COPY eShop.Catalog.Tests/eShop.Catalog.Tests.csproj eShop.Catalog.Tests/
 
-RUN dotnet restore
+RUN dotnet restore eShopModernized.sln
 
 COPY . .
 RUN dotnet publish eShop.Catalog.Api/eShop.Catalog.Api.csproj \
