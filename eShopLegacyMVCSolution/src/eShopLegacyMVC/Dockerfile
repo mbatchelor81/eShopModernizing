@@ -22,6 +22,11 @@ EXPOSE 80
 # Copy published output
 COPY --from=build /src/src/eShopLegacyMVC/obj/Release/Package/PackageTmp/ .
 
+# Copy entrypoint script for environment variable substitution
+COPY src/eShopLegacyMVC/docker-entrypoint.ps1 /docker-entrypoint.ps1
+
 # Health check for container orchestrators
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
   CMD powershell -Command "try { $response = Invoke-WebRequest -Uri http://localhost/health -UseBasicParsing; if ($response.StatusCode -eq 200) { exit 0 } else { exit 1 } } catch { exit 1 }"
+
+ENTRYPOINT ["powershell", "-File", "C:\\docker-entrypoint.ps1"]
