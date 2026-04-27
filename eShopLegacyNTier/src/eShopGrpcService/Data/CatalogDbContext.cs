@@ -37,6 +37,7 @@ public class CatalogDbContext : DbContext
             e.HasKey(x => x.StockId);
             e.Property(x => x.StockId).ValueGeneratedNever();
             e.Property(x => x.Date).HasColumnType("date");
+            e.HasIndex(x => new { x.CatalogItemId, x.Date }).IsUnique();
         });
 
         modelBuilder.Entity<CatalogType>(e =>

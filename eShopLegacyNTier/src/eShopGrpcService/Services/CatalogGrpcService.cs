@@ -95,42 +95,42 @@ public class CatalogGrpcService : eShopGrpcService.CatalogService.CatalogService
         var ct = context.CancellationToken;
         var date = CatalogMapper.ToUtcDateTime(request.Date).Date;
 
-        var existing = await _db.CatalogItemsStocks
-            .Where(x => x.CatalogItemId == request.CatalogItemId && x.Date.Date == date)
-            .FirstOrDefaultAsync(ct);
+        for (int attempt = 0; attempt < maxRetries; attempt++)
+        {
+            ct.ThrowIfCancellationRequested();
 
-        if (existing != null)
-        {
-            existing.AvailableStock = request.AvailableStock;
-            _db.Entry(existing).State = EntityState.Modified;
-            await _db.SaveChangesAsync(ct);
-        }
-        else
-        {
-            for (int attempt = 0; attempt < maxRetries; attempt++)
+            var existing = await _db.CatalogItemsStocks
+                .Where(x => x.CatalogItemId == request.CatalogItemId && x.Date.Date == date)
+                .FirstOrDefaultAsync(ct);
+
+            if (existing != null)
             {
-                ct.ThrowIfCancellationRequested();
-                var maxId = await _db.CatalogItemsStocks.AnyAsync(ct)
-                    ? await _db.CatalogItemsStocks.MaxAsync(i => i.StockId, ct)
-                    : 0;
+                existing.AvailableStock = request.AvailableStock;
+                _db.Entry(existing).State = EntityState.Modified;
+                await _db.SaveChangesAsync(ct);
+                return new Empty();
+            }
 
-                var stock = new CatalogItemsStock
-                {
-                    StockId = maxId + 1,
-                    Date = date,
-                    CatalogItemId = request.CatalogItemId,
-                    AvailableStock = request.AvailableStock,
-                };
-                _db.CatalogItemsStocks.Add(stock);
-                try
-                {
-                    await _db.SaveChangesAsync(ct);
-                    return new Empty();
-                }
-                catch (DbUpdateException) when (attempt < maxRetries - 1)
-                {
-                    _db.Entry(stock).State = EntityState.Detached;
-                }
+            var maxId = await _db.CatalogItemsStocks.AnyAsync(ct)
+                ? await _db.CatalogItemsStocks.MaxAsync(i => i.StockId, ct)
+                : 0;
+
+            var stock = new CatalogItemsStock
+            {
+                StockId = maxId + 1,
+                Date = date,
+                CatalogItemId = request.CatalogItemId,
+                AvailableStock = request.AvailableStock,
+            };
+            _db.CatalogItemsStocks.Add(stock);
+            try
+            {
+                await _db.SaveChangesAsync(ct);
+                return new Empty();
+            }
+            catch (DbUpdateException) when (attempt < maxRetries - 1)
+            {
+                _db.Entry(stock).State = EntityState.Detached;
             }
         }
         return new Empty();
