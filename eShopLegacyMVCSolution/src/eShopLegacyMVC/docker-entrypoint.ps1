@@ -1,24 +1,31 @@
 # docker-entrypoint.ps1
 # Substitutes environment variables into Web.config before IIS starts.
+# Uses XML parsing instead of regex to avoid special character issues.
 
-$webConfig = "C:\inetpub\wwwroot\Web.config"
+$webConfigPath = "C:\inetpub\wwwroot\Web.config"
 
-if (Test-Path $webConfig) {
-    $content = Get-Content $webConfig -Raw
+if (Test-Path $webConfigPath) {
+    [xml]$xml = Get-Content $webConfigPath
 
-    # Replace SESSION_DB_HOST placeholder with environment variable if set
+    # Replace SESSION_DB_HOST placeholder in sessionState connection string
     if ($env:SESSION_DB_HOST) {
-        $content = $content -replace 'SESSION_DB_HOST', $env:SESSION_DB_HOST
-        Write-Host "Replaced SESSION_DB_HOST in Web.config"
+        $sessionState = $xml.SelectSingleNode("//system.web/sessionState")
+        if ($sessionState -and $sessionState.sqlConnectionString) {
+            $sessionState.sqlConnectionString = $sessionState.sqlConnectionString -replace 'SESSION_DB_HOST', $env:SESSION_DB_HOST
+            Write-Host "Replaced SESSION_DB_HOST in Web.config"
+        }
     }
 
-    # Replace connection string if provided via environment variable
+    # Replace CatalogDBContext connection string if provided
     if ($env:ConnectionString) {
-        $content = $content -replace '(?<=name="CatalogDBContext"\s+connectionString=")[^"]*', [regex]::Escape($env:ConnectionString)
-        Write-Host "Replaced CatalogDBContext connection string in Web.config"
+        $node = $xml.SelectSingleNode("//connectionStrings/add[@name='CatalogDBContext']")
+        if ($node) {
+            $node.SetAttribute("connectionString", $env:ConnectionString)
+            Write-Host "Replaced CatalogDBContext connection string in Web.config"
+        }
     }
 
-    Set-Content $webConfig $content
+    $xml.Save($webConfigPath)
 }
 
 # Start IIS and wait
