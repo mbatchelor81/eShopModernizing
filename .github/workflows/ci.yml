@@ -35,6 +35,9 @@ jobs:
       - name: NuGet Restore
         run: nuget restore eShopLegacyMVCSolution/eShopLegacyMVC.sln
 
+      - name: Install .NET Framework 4.6.1 Developer Pack
+        run: choco install netfx-4.6.1-devpack -y --no-progress
+
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
