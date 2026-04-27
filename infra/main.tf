@@ -64,7 +64,7 @@ module "database" {
   resource_prefix     = local.resource_prefix
   sku_name            = var.db_sku_name
   admin_login         = var.db_admin_login
-  subnet_id           = module.networking.db_subnet_id
+  subnet_id           = module.networking.aks_subnet_id
   key_vault_id        = module.secrets.key_vault_id
   tags                = local.common_tags
 }

@@ -51,7 +51,7 @@ ingress:
   className: nginx
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
-  host: eshop.example.com
+  host: eshop-dev.example.com
   tls: true
 
 autoscaling:
