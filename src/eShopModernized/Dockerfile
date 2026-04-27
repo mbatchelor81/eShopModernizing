@@ -5,6 +5,8 @@ COPY Directory.Build.props .
 COPY eShop.Shared.Core/eShop.Shared.Core.csproj eShop.Shared.Core/
 COPY eShop.Catalog.Core/eShop.Catalog.Core.csproj eShop.Catalog.Core/
 COPY eShop.Catalog.Api/eShop.Catalog.Api.csproj eShop.Catalog.Api/
+COPY eShop.Catalog.Web/eShop.Catalog.Web.csproj eShop.Catalog.Web/
+COPY eShop.Catalog.Client/eShop.Catalog.Client.csproj eShop.Catalog.Client/
 COPY eShop.Catalog.Tests/eShop.Catalog.Tests.csproj eShop.Catalog.Tests/
 COPY eShopModernized.sln .
 RUN dotnet restore
