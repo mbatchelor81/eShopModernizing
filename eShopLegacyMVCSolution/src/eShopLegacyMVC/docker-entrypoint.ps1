@@ -61,11 +61,6 @@ if (Test-Path $webConfigPath) {
     $xml.Save($webConfigPath)
 }
 
-# Start IIS and wait
-Write-Host "Starting IIS..."
-Start-Service W3SVC
-Write-Host "IIS started. Monitoring..."
-
-while ($true) {
-    Start-Sleep -Seconds 3600
-}
+# Start IIS via ServiceMonitor (monitors W3SVC and exits if it crashes)
+Write-Host "Starting IIS via ServiceMonitor..."
+& C:\ServiceMonitor.exe w3svc
