@@ -101,6 +101,7 @@ public class CatalogGrpcService : eShopGrpcService.CatalogService.CatalogService
         {
             existing.AvailableStock = request.AvailableStock;
             _db.Entry(existing).State = EntityState.Modified;
+            await _db.SaveChangesAsync();
         }
         else
         {
