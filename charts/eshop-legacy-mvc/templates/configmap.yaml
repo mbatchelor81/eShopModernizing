@@ -6,11 +6,11 @@ metadata:
   labels:
     {{- include "eshop.labels" . | nindent 4 }}
 data:
-  APPSETTING_UseMockData: {{ .Values.config.useMockData | quote }}
-  APPSETTING_UseCustomizationData: {{ .Values.config.useCustomizationData | quote }}
-  APPSETTING_UseAzureStorage: {{ .Values.config.useAzureStorage | quote }}
-  APPSETTING_StorageConnectionString: {{ .Values.config.storageConnectionString | quote }}
-  APPSETTING_UseAzureActiveDirectory: {{ .Values.config.useAzureActiveDirectory | quote }}
-  APPSETTING_AzureActiveDirectoryClientId: {{ .Values.config.azureActiveDirectoryClientId | quote }}
-  APPSETTING_AzureActiveDirectoryTenant: {{ .Values.config.azureActiveDirectoryTenant | quote }}
-  APPSETTING_PostLogoutRedirectUri: {{ .Values.config.postLogoutRedirectUri | quote }}
+  UseMockData: {{ .Values.config.useMockData | quote }}
+  UseCustomizationData: {{ .Values.config.useCustomizationData | quote }}
+  UseAzureStorage: {{ .Values.config.useAzureStorage | quote }}
+  StorageConnectionString: {{ .Values.config.storageConnectionString | quote }}
+  UseAzureActiveDirectory: {{ .Values.config.useAzureActiveDirectory | quote }}
+  AzureActiveDirectoryClientId: {{ .Values.config.azureActiveDirectoryClientId | quote }}
+  AzureActiveDirectoryTenant: {{ .Values.config.azureActiveDirectoryTenant | quote }}
+  PostLogoutRedirectUri: {{ .Values.config.postLogoutRedirectUri | quote }}

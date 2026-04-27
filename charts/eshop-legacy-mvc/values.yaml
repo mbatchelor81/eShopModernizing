@@ -80,6 +80,8 @@ externalSecrets:
   keys:
     - name: ConnectionString
       remoteRef: eshop/db-connection-string
+    - name: SessionStateConnStr
+      remoteRef: eshop/session-state-connection-string
     - name: AppInsightsKey
       remoteRef: eshop/appinsights-key
 
