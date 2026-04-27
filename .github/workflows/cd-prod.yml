@@ -36,7 +36,7 @@ jobs:
         run: |
           SHORT_SHA="${COMMIT_SHA:0:7}"
           echo "tag=${TAG_NAME}" >> "$GITHUB_OUTPUT"
-          echo "sha-tag=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "sha_tag=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
 
       - name: Docker Login
         run: echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ env.REGISTRY }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
@@ -44,7 +44,7 @@ jobs:
       - name: Build & Push
         run: |
           $semver = "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.tag }}"
-          $sha = "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.sha-tag }}"
+          $sha = "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.sha_tag }}"
           $latest = "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
           docker build -t $semver -t $sha -t $latest `
             -f eShopLegacyMVCSolution/src/eShopLegacyMVC/Dockerfile `
