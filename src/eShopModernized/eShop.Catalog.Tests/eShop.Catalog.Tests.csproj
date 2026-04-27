@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.11" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
     <PackageReference Include="xunit" Version="2.7.0" />
@@ -17,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\eShop.Catalog.Api\eShop.Catalog.Api.csproj" />
     <ProjectReference Include="..\eShop.Catalog.Core\eShop.Catalog.Core.csproj" />
     <ProjectReference Include="..\eShop.Shared.Core\eShop.Shared.Core.csproj" />
   </ItemGroup>

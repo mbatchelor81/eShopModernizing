@@ -1,0 +1,119 @@
+syntax = "proto3";
+
+option csharp_namespace = "eShop.Catalog.Api";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+service CatalogGrpc {
+  rpc FindCatalogItem (FindCatalogItemRequest) returns (CatalogItemResponse);
+  rpc GetCatalogItems (GetCatalogItemsRequest) returns (CatalogItemListResponse);
+  rpc GetCatalogBrands (google.protobuf.Empty) returns (CatalogBrandListResponse);
+  rpc GetCatalogTypes (google.protobuf.Empty) returns (CatalogTypeListResponse);
+  rpc CreateCatalogItem (CatalogItemRequest) returns (google.protobuf.Empty);
+  rpc UpdateCatalogItem (CatalogItemRequest) returns (google.protobuf.Empty);
+  rpc RemoveCatalogItem (RemoveCatalogItemRequest) returns (google.protobuf.Empty);
+  rpc GetAvailableStock (GetStockRequest) returns (StockResponse);
+  rpc CreateAvailableStock (CreateStockRequest) returns (google.protobuf.Empty);
+  rpc GetDiscount (GetDiscountRequest) returns (DiscountResponse);
+}
+
+message FindCatalogItemRequest {
+  int32 id = 1;
+}
+
+message GetCatalogItemsRequest {
+  int32 brand_id = 1;
+  int32 type_id = 2;
+  int32 page_size = 3;
+  int32 page_index = 4;
+}
+
+message CatalogItemResponse {
+  int32 id = 1;
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  string picture_file_name = 5;
+  string picture_uri = 6;
+  int32 catalog_type_id = 7;
+  string catalog_type_name = 8;
+  int32 catalog_brand_id = 9;
+  string catalog_brand_name = 10;
+  int32 available_stock = 11;
+  int32 restock_threshold = 12;
+  int32 max_stock_threshold = 13;
+  bool on_reorder = 14;
+}
+
+message CatalogItemListResponse {
+  int32 page_index = 1;
+  int32 page_size = 2;
+  int32 total_count = 3;
+  repeated CatalogItemResponse data = 4;
+}
+
+message CatalogBrandResponse {
+  int32 id = 1;
+  string brand = 2;
+}
+
+message CatalogBrandListResponse {
+  repeated CatalogBrandResponse brands = 1;
+}
+
+message CatalogTypeResponse {
+  int32 id = 1;
+  string type = 2;
+}
+
+message CatalogTypeListResponse {
+  repeated CatalogTypeResponse catalog_types = 1;
+}
+
+message CatalogItemRequest {
+  int32 id = 1;
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  string picture_file_name = 5;
+  int32 catalog_type_id = 6;
+  int32 catalog_brand_id = 7;
+  int32 available_stock = 8;
+  int32 restock_threshold = 9;
+  int32 max_stock_threshold = 10;
+  bool on_reorder = 11;
+}
+
+message RemoveCatalogItemRequest {
+  int32 id = 1;
+}
+
+message GetStockRequest {
+  google.protobuf.Timestamp date = 1;
+  int32 catalog_item_id = 2;
+}
+
+message StockResponse {
+  int32 stock_id = 1;
+  google.protobuf.Timestamp date = 2;
+  int32 catalog_item_id = 3;
+  int32 available_stock = 4;
+}
+
+message CreateStockRequest {
+  google.protobuf.Timestamp date = 1;
+  int32 catalog_item_id = 2;
+  int32 available_stock = 3;
+}
+
+message GetDiscountRequest {
+  google.protobuf.Timestamp date = 1;
+}
+
+message DiscountResponse {
+  int32 id = 1;
+  double size = 2;
+  google.protobuf.Timestamp start = 3;
+  google.protobuf.Timestamp end = 4;
+}
