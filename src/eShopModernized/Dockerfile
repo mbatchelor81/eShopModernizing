@@ -30,6 +30,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 
 ENV ASPNETCORE_ENVIRONMENT=Production
+ENV Kestrel__HttpPort=8080
+ENV Kestrel__GrpcPort=8081
 EXPOSE 8080 8081
 
 COPY --from=build /app/publish .

@@ -9,6 +9,8 @@ services:
     environment:
       - ConnectionStrings__CatalogDb=Server=sqlserver;Database=CatalogDb;User Id=sa;Password=Your_password123;TrustServerCertificate=true
       - ASPNETCORE_ENVIRONMENT=Development
+      - Kestrel__HttpPort=8080
+      - Kestrel__GrpcPort=8081
     depends_on:
       sqlserver:
         condition: service_healthy

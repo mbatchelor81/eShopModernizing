@@ -42,12 +42,14 @@ builder.Services.AddGrpc();
 builder.Services.AddHealthChecks();
 
 // EM-76: Configure Kestrel for dual HTTP/2 (gRPC) + HTTP/1.1 (REST)
+var httpPort = builder.Configuration.GetValue("Kestrel:HttpPort", 5000);
+var grpcPort = builder.Configuration.GetValue("Kestrel:GrpcPort", 5001);
 builder.WebHost.ConfigureKestrel(options =>
 {
-    // HTTP/1.1 + HTTP/2 for REST + Swagger (port 5000)
-    options.ListenAnyIP(5000, o => o.Protocols = HttpProtocols.Http1AndHttp2);
-    // HTTP/2 only for gRPC (port 5001)
-    options.ListenAnyIP(5001, o => o.Protocols = HttpProtocols.Http2);
+    // HTTP/1.1 + HTTP/2 for REST + Swagger
+    options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1AndHttp2);
+    // HTTP/2 only for gRPC
+    options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
 });
 
 var app = builder.Build();
