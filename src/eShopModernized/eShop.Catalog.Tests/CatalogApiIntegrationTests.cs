@@ -12,7 +12,7 @@ using Xunit;
 
 namespace eShop.Catalog.Tests;
 
-public class CatalogApiIntegrationTests : IClassFixture<CatalogApiIntegrationTests.CatalogApiFactory>, IDisposable
+public class CatalogApiIntegrationTests : IClassFixture<CatalogApiIntegrationTests.CatalogApiFactory>, IAsyncLifetime
 {
     private readonly HttpClient _client;
     private readonly CatalogApiFactory _factory;
@@ -24,9 +24,19 @@ public class CatalogApiIntegrationTests : IClassFixture<CatalogApiIntegrationTes
         _client = factory.CreateClient();
     }
 
-    public void Dispose()
+    public async Task InitializeAsync()
+    {
+        // Reset database to pristine seed state before each test
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
+        await db.Database.EnsureDeletedAsync();
+        await db.Database.EnsureCreatedAsync();
+    }
+
+    public Task DisposeAsync()
     {
         _client.Dispose();
+        return Task.CompletedTask;
     }
 
     // --- GET /api/catalog/items (paginated, filtered) ---
