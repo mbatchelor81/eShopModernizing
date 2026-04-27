@@ -107,6 +107,9 @@ app.MapGet("/api/catalog/items", async (
     int pageSize = 10,
     int pageIndex = 0) =>
 {
+    pageSize = pageSize > 0 ? pageSize : 10;
+    pageIndex = pageIndex >= 0 ? pageIndex : 0;
+
     var query = db.CatalogItems
         .Include(i => i.CatalogBrand)
         .Include(i => i.CatalogType)
