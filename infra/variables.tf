@@ -85,6 +85,12 @@ variable "private_cluster_enabled" {
   default     = false
 }
 
+variable "ci_runner_ip" {
+  description = "CI runner public IP (CIDR) to allow Key Vault data plane access during provisioning"
+  type        = string
+  default     = ""
+}
+
 variable "tags" {
   description = "Tags applied to all resources"
   type        = map(string)

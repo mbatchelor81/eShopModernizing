@@ -66,8 +66,17 @@ jobs:
         with:
           terraform_version: "1.5"
 
+      - name: Get runner IP
+        id: ip
+        run: echo "runner_ip=$(curl -s https://api.ipify.org)/32" >> "$GITHUB_OUTPUT"
+
       - name: Terraform Init
-        run: terraform init
+        run: |
+          terraform init \
+            -backend-config="storage_account_name=${{ secrets.TF_BACKEND_STORAGE_ACCOUNT }}" \
+            -backend-config="container_name=${{ secrets.TF_BACKEND_CONTAINER }}" \
+            -backend-config="key=dev.terraform.tfstate" \
+            -backend-config="resource_group_name=${{ secrets.TF_BACKEND_RG }}"
         env:
           ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
           ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
@@ -75,7 +84,7 @@ jobs:
           ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve -var-file=environments/dev.tfvars
+        run: terraform apply -auto-approve -var-file=environments/dev.tfvars -var="ci_runner_ip=${{ steps.ip.outputs.runner_ip }}"
         env:
           ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
           ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}

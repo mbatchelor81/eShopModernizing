@@ -54,6 +54,7 @@ module "secrets" {
   location            = azurerm_resource_group.main.location
   resource_prefix     = local.resource_prefix
   subnet_ids          = [module.networking.aks_subnet_id]
+  ip_rules            = var.ci_runner_ip != "" ? [var.ci_runner_ip] : []
   tags                = local.common_tags
 }
 

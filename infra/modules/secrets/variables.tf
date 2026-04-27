@@ -24,3 +24,9 @@ variable "subnet_ids" {
   type        = list(string)
   default     = []
 }
+
+variable "ip_rules" {
+  description = "CIDR blocks allowed to access Key Vault (e.g. CI runner IPs)"
+  type        = list(string)
+  default     = []
+}
