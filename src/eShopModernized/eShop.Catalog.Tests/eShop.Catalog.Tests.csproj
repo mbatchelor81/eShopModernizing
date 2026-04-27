@@ -20,6 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\eShop.Catalog.Api\eShop.Catalog.Api.csproj" />
     <ProjectReference Include="..\eShop.Catalog.Core\eShop.Catalog.Core.csproj" />
+    <ProjectReference Include="..\eShop.Catalog.Web\eShop.Catalog.Web.csproj" />
     <ProjectReference Include="..\eShop.Shared.Core\eShop.Shared.Core.csproj" />
   </ItemGroup>
 
