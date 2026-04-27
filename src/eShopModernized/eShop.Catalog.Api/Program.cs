@@ -1,9 +1,15 @@
+using eShop.Catalog.Core.Data;
 using eShop.Shared.Core;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // EM-65: Serilog logging
 builder.Host.UseEShopSerilog();
+
+// EM-68/70: EF Core DbContext registration
+builder.Services.AddDbContext<CatalogDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("CatalogDb")));
 
 // EM-67: Dependency injection
 builder.Services.AddCatalogServices(builder.Configuration);
