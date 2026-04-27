@@ -102,6 +102,9 @@ public class CatalogGrpcService : CatalogGrpc.CatalogGrpcBase
     public override async Task<Empty> CreateCatalogItem(
         CatalogItemRequest request, ServerCallContext context)
     {
+        await using var transaction = await _db.Database.BeginTransactionAsync(
+            System.Data.IsolationLevel.Serializable, context.CancellationToken);
+
         var item = new CatalogItem
         {
             Name = request.Name,
@@ -127,6 +130,7 @@ public class CatalogGrpcService : CatalogGrpc.CatalogGrpcBase
 
         _db.CatalogItems.Add(item);
         await _db.SaveChangesAsync(context.CancellationToken);
+        await transaction.CommitAsync(context.CancellationToken);
         return new Empty();
     }
 
@@ -192,6 +196,9 @@ public class CatalogGrpcService : CatalogGrpc.CatalogGrpcBase
     public override async Task<Empty> CreateAvailableStock(
         CreateStockRequest request, ServerCallContext context)
     {
+        await using var transaction = await _db.Database.BeginTransactionAsync(
+            System.Data.IsolationLevel.Serializable, context.CancellationToken);
+
         var date = request.Date.ToDateTime().Date;
         var existing = await _db.CatalogItemsStocks
             .FirstOrDefaultAsync(
@@ -218,6 +225,7 @@ public class CatalogGrpcService : CatalogGrpc.CatalogGrpcBase
         }
 
         await _db.SaveChangesAsync(context.CancellationToken);
+        await transaction.CommitAsync(context.CancellationToken);
         return new Empty();
     }
 

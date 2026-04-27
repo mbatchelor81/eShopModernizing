@@ -142,6 +142,9 @@ app.MapPost("/api/catalog/items", async (CreateCatalogItemRequest request, Catal
     if (string.IsNullOrWhiteSpace(request.Name))
         return Results.BadRequest(new { message = "Name is required" });
 
+    await using var transaction = await db.Database.BeginTransactionAsync(
+        System.Data.IsolationLevel.Serializable);
+
     var newId = await db.CatalogItems.AnyAsync()
         ? await db.CatalogItems.MaxAsync(i => i.Id) + 1
         : 1;
@@ -163,6 +166,7 @@ app.MapPost("/api/catalog/items", async (CreateCatalogItemRequest request, Catal
 
     db.CatalogItems.Add(item);
     await db.SaveChangesAsync();
+    await transaction.CommitAsync();
 
     // Reload with navigation properties
     var created = await db.CatalogItems
@@ -302,6 +306,9 @@ app.MapGet("/api/catalog/stock", async (CatalogDbContext db, DateTime date, int 
 /// </summary>
 app.MapPost("/api/catalog/stock", async (CreateStockRequest request, CatalogDbContext db) =>
 {
+    await using var transaction = await db.Database.BeginTransactionAsync(
+        System.Data.IsolationLevel.Serializable);
+
     var existing = await db.CatalogItemsStocks
         .FirstOrDefaultAsync(s => s.CatalogItemId == request.CatalogItemId && s.Date.Date == request.Date.Date);
 
@@ -309,6 +316,7 @@ app.MapPost("/api/catalog/stock", async (CreateStockRequest request, CatalogDbCo
     {
         existing.AvailableStock = request.AvailableStock;
         await db.SaveChangesAsync();
+        await transaction.CommitAsync();
         return Results.Ok(new CatalogItemStockDto(
             existing.StockId, existing.Date, existing.CatalogItemId, existing.AvailableStock));
     }
@@ -327,6 +335,7 @@ app.MapPost("/api/catalog/stock", async (CreateStockRequest request, CatalogDbCo
 
     db.CatalogItemsStocks.Add(stock);
     await db.SaveChangesAsync();
+    await transaction.CommitAsync();
 
     return Results.Created($"/api/catalog/stock?date={stock.Date:yyyy-MM-dd}&itemId={stock.CatalogItemId}",
         new CatalogItemStockDto(stock.StockId, stock.Date, stock.CatalogItemId, stock.AvailableStock));
