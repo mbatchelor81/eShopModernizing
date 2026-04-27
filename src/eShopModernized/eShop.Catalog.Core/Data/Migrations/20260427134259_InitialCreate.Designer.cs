@@ -12,7 +12,7 @@ using eShop.Catalog.Core.Data;
 namespace eShop.Catalog.Core.Data.Migrations
 {
     [DbContext(typeof(CatalogDbContext))]
-    [Migration("20260427133628_InitialCreate")]
+    [Migration("20260427134259_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -26,6 +26,7 @@ namespace eShop.Catalog.Core.Data.Migrations
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.HasSequence("catalog_hilo")
+                .StartsAt(20L)
                 .IncrementsBy(10);
 
             modelBuilder.Entity("eShop.Catalog.Core.Entities.CatalogBrand", b =>

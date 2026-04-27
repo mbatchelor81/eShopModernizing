@@ -15,6 +15,7 @@ namespace eShop.Catalog.Core.Data.Migrations
         {
             migrationBuilder.CreateSequence(
                 name: "catalog_hilo",
+                startValue: 20L,
                 incrementBy: 10);
 
             migrationBuilder.CreateTable(

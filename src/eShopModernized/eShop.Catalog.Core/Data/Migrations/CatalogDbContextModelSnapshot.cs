@@ -23,6 +23,7 @@ namespace eShop.Catalog.Core.Data.Migrations
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.HasSequence("catalog_hilo")
+                .StartsAt(20L)
                 .IncrementsBy(10);
 
             modelBuilder.Entity("eShop.Catalog.Core.Entities.CatalogBrand", b =>

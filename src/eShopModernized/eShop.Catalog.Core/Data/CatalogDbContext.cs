@@ -28,6 +28,10 @@ public class CatalogDbContext : DbContext
         // EM-71: HiLo ID generation for CatalogItem (SQL Server only; SQLite lacks sequence support)
         if (Database.IsSqlServer())
         {
+            modelBuilder.HasSequence("catalog_hilo")
+                .StartsAt(20)
+                .IncrementsBy(10);
+
             modelBuilder.Entity<CatalogItem>()
                 .Property(ci => ci.Id)
                 .UseHiLo("catalog_hilo");
