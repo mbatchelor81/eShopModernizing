@@ -91,25 +91,27 @@ public class CatalogGrpcService : eShopGrpcService.CatalogService.CatalogService
     public override async Task<Empty> CreateAvailableStock(
         CatalogItemsStockMessage request, ServerCallContext context)
     {
+        const int maxRetries = 3;
+        var ct = context.CancellationToken;
         var date = CatalogMapper.ToUtcDateTime(request.Date).Date;
 
         var existing = await _db.CatalogItemsStocks
             .Where(x => x.CatalogItemId == request.CatalogItemId && x.Date.Date == date)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(ct);
 
         if (existing != null)
         {
             existing.AvailableStock = request.AvailableStock;
             _db.Entry(existing).State = EntityState.Modified;
-            await _db.SaveChangesAsync();
+            await _db.SaveChangesAsync(ct);
         }
         else
         {
-            var inserted = false;
-            while (!inserted)
+            for (int attempt = 0; attempt < maxRetries; attempt++)
             {
-                var maxId = await _db.CatalogItemsStocks.AnyAsync()
-                    ? await _db.CatalogItemsStocks.MaxAsync(i => i.StockId)
+                ct.ThrowIfCancellationRequested();
+                var maxId = await _db.CatalogItemsStocks.AnyAsync(ct)
+                    ? await _db.CatalogItemsStocks.MaxAsync(i => i.StockId, ct)
                     : 0;
 
                 var stock = new CatalogItemsStock
@@ -122,10 +124,10 @@ public class CatalogGrpcService : eShopGrpcService.CatalogService.CatalogService
                 _db.CatalogItemsStocks.Add(stock);
                 try
                 {
-                    await _db.SaveChangesAsync();
-                    inserted = true;
+                    await _db.SaveChangesAsync(ct);
+                    return new Empty();
                 }
-                catch (DbUpdateException)
+                catch (DbUpdateException) when (attempt < maxRetries - 1)
                 {
                     _db.Entry(stock).State = EntityState.Detached;
                 }
@@ -137,23 +139,25 @@ public class CatalogGrpcService : eShopGrpcService.CatalogService.CatalogService
     public override async Task<Empty> CreateCatalogItem(
         CatalogItemMessage request, ServerCallContext context)
     {
+        const int maxRetries = 3;
+        var ct = context.CancellationToken;
         var item = CatalogMapper.ToEntity(request);
 
-        var saved = false;
-        while (!saved)
+        for (int attempt = 0; attempt < maxRetries; attempt++)
         {
-            var maxId = await _db.CatalogItems.AnyAsync()
-                ? await _db.CatalogItems.MaxAsync(i => i.Id)
+            ct.ThrowIfCancellationRequested();
+            var maxId = await _db.CatalogItems.AnyAsync(ct)
+                ? await _db.CatalogItems.MaxAsync(i => i.Id, ct)
                 : 0;
             item.Id = maxId + 1;
 
             _db.CatalogItems.Add(item);
             try
             {
-                await _db.SaveChangesAsync();
-                saved = true;
+                await _db.SaveChangesAsync(ct);
+                return new Empty();
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException) when (attempt < maxRetries - 1)
             {
                 _db.Entry(item).State = EntityState.Detached;
             }
