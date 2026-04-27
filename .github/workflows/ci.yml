@@ -51,7 +51,7 @@ jobs:
 
   docker-build:
     name: Docker Build & Scan
-    runs-on: windows-latest
+    runs-on: windows-2022
     needs: build-test
     steps:
       - name: Checkout
