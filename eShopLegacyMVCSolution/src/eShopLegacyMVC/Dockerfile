@@ -13,7 +13,7 @@ RUN nuget restore eShopLegacyMVC.sln
 
 # Copy all source and publish the MVC project (triggers Web.config transforms)
 COPY . .
-RUN msbuild src/eShopLegacyMVC/eShopLegacyMVC.csproj /p:Configuration=Release /p:DeployOnBuild=true /p:PublishUrl=C:\output
+RUN msbuild src/eShopLegacyMVC/eShopLegacyMVC.csproj /p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=FileSystem /p:PublishUrl=C:\publish
 
 # Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/framework/aspnet:4.8-windowsservercore-ltsc2022
@@ -22,7 +22,7 @@ WORKDIR /inetpub/wwwroot
 EXPOSE 80
 
 # Copy published output
-COPY --from=build C:\output\ .
+COPY --from=build C:/publish/ .
 
 # Copy entrypoint script for environment variable substitution
 COPY src/eShopLegacyMVC/docker-entrypoint.ps1 /docker-entrypoint.ps1
