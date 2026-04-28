@@ -68,7 +68,7 @@ module "database" {
   sql_admin_username   = var.sql_admin_username
   sql_admin_password   = module.secrets.sql_admin_password
   sql_sku              = var.sql_sku
-  subnet_id            = module.networking.db_subnet_id
+  subnet_id            = module.networking.aks_subnet_id
   tags                 = local.common_tags
 }
 

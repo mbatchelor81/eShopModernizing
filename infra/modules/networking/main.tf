@@ -11,6 +11,7 @@ resource "azurerm_subnet" "aks" {
   resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.main.name
   address_prefixes     = [cidrsubnet(var.vnet_address_space[0], 8, 0)]
+  service_endpoints    = ["Microsoft.Sql"]
 }
 
 resource "azurerm_subnet" "db" {

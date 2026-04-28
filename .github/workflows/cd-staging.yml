@@ -132,8 +132,8 @@ jobs:
             sleep 30
           done
           echo "Smoke test failed — rolling back"
-          REVISION=$(helm history eshop-mvc -n eshop-${{ env.ENVIRONMENT }} --max 2 -o json | jq '.[0].revision')
-          if [ "$REVISION" -gt 1 ] 2>/dev/null; then
+          HISTORY_LEN=$(helm history eshop-mvc -n eshop-${{ env.ENVIRONMENT }} --max 2 -o json | jq 'length')
+          if [ "$HISTORY_LEN" -gt 1 ] 2>/dev/null; then
             helm rollback eshop-mvc -n eshop-${{ env.ENVIRONMENT }}
           else
             echo "WARNING: First deployment — no previous revision. Uninstalling release."
