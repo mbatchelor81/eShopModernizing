@@ -112,7 +112,7 @@ jobs:
           release-name: eshop-mvc
           chart-path: ${{ env.CHART_PATH }}
           namespace: eshop-${{ env.ENVIRONMENT }}
-          values-file: ${{ env.CHART_PATH }}/values.yaml
+          values-file: ${{ env.CHART_PATH }}/values-dev.yaml
           image-repository: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           image-tag: ${{ needs.build-push.outputs.image_tag }}
 
@@ -129,5 +129,11 @@ jobs:
             sleep 30
           done
           echo "Smoke test failed — rolling back"
-          helm rollback eshop-mvc -n eshop-${{ env.ENVIRONMENT }}
+          REVISION=$(helm history eshop-mvc -n eshop-${{ env.ENVIRONMENT }} --max 2 -o json | jq '.[0].revision')
+          if [ "$REVISION" -gt 1 ] 2>/dev/null; then
+            helm rollback eshop-mvc -n eshop-${{ env.ENVIRONMENT }}
+          else
+            echo "WARNING: First deployment — no previous revision. Uninstalling release."
+            helm uninstall eshop-mvc -n eshop-${{ env.ENVIRONMENT }}
+          fi
           exit 1
