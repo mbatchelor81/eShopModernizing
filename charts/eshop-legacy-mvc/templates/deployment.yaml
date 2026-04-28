@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "eshop.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "eshop.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "eshop.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        {{- include "eshop.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "eshop.serviceAccountName" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          env:
+            - name: UseMockData
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "eshop.fullname" . }}
+                  key: UseMockData
+            - name: UseCustomizationData
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "eshop.fullname" . }}
+                  key: UseCustomizationData
+            - name: UseAzureStorage
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "eshop.fullname" . }}
+                  key: UseAzureStorage
+            - name: UseAzureActiveDirectory
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "eshop.fullname" . }}
+                  key: UseAzureActiveDirectory
+            {{- if .Values.externalSecrets.enabled }}
+            - name: ConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "eshop.fullname" . }}-secrets
+                  key: ConnectionString
+            - name: AppInsightsInstrumentationKey
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "eshop.fullname" . }}-secrets
+                  key: AppInsightsKey
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.probes.liveness.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+            failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.probes.readiness.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+            failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
+          startupProbe:
+            httpGet:
+              path: {{ .Values.probes.startup.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.probes.startup.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.startup.periodSeconds }}
+            failureThreshold: {{ .Values.probes.startup.failureThreshold }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

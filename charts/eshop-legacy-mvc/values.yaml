@@ -1,0 +1,91 @@
+image:
+  repository: ""
+  tag: ""
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi
+
+ingress:
+  enabled: true
+  className: nginx
+  host: eshop.example.com
+  tls: true
+  clusterIssuer: letsencrypt-prod
+  annotations: {}
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilization: 70
+
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+
+config:
+  useMockData: "false"
+  useCustomizationData: "false"
+  useAzureStorage: "false"
+  useAzureActiveDirectory: "false"
+
+externalSecrets:
+  enabled: true
+  secretStoreName: "vault-backend"
+  keys:
+    - name: ConnectionString
+      remoteRef: eshop/db-connection-string
+    - name: AppInsightsKey
+      remoteRef: eshop/appinsights-key
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+service:
+  type: ClusterIP
+  port: 80
+
+probes:
+  liveness:
+    path: /health
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    failureThreshold: 3
+  readiness:
+    path: /health
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    failureThreshold: 3
+  startup:
+    path: /health
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    failureThreshold: 30
+
+nodeSelector:
+  kubernetes.io/os: windows
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - eshop-legacy-mvc
+          topologyKey: kubernetes.io/hostname
+
+tolerations: []
