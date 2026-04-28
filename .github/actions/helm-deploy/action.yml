@@ -35,16 +35,26 @@ runs:
 
     - name: Create namespace
       shell: bash
-      run: kubectl create namespace ${{ inputs.namespace }} --dry-run=client -o yaml | kubectl apply -f -
+      env:
+        NAMESPACE: ${{ inputs.namespace }}
+      run: kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
 
     - name: Helm Upgrade
       shell: bash
+      env:
+        RELEASE_NAME: ${{ inputs.release-name }}
+        CHART_PATH: ${{ inputs.chart-path }}
+        NAMESPACE: ${{ inputs.namespace }}
+        VALUES_FILE: ${{ inputs.values-file }}
+        IMAGE_REPO: ${{ inputs.image-repository }}
+        IMAGE_TAG: ${{ inputs.image-tag }}
+        TIMEOUT: ${{ inputs.timeout }}
       run: |
-        helm upgrade --install ${{ inputs.release-name }} ${{ inputs.chart-path }} \
-          --namespace ${{ inputs.namespace }} \
-          --values ${{ inputs.values-file }} \
-          --set image.repository=${{ inputs.image-repository }} \
-          --set image.tag=${{ inputs.image-tag }} \
-          --timeout ${{ inputs.timeout }} \
+        helm upgrade --install "${RELEASE_NAME}" "${CHART_PATH}" \
+          --namespace "${NAMESPACE}" \
+          --values "${VALUES_FILE}" \
+          --set-string "image.repository=${IMAGE_REPO}" \
+          --set-string "image.tag=${IMAGE_TAG}" \
+          --timeout "${TIMEOUT}" \
           --wait \
           --atomic
