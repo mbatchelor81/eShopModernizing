@@ -88,4 +88,8 @@ affinity:
                   - eshop-legacy-mvc
           topologyKey: kubernetes.io/hostname
 
-tolerations: []
+tolerations:
+  - key: "node.kubernetes.io/os"
+    operator: "Equal"
+    value: "windows"
+    effect: "NoSchedule"
