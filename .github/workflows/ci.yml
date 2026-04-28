@@ -20,6 +20,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install .NET Framework targeting packs
+        shell: pwsh
+        run: |
+          choco install netfx-4.6.1-devpack -y --no-progress
+          choco install netfx-4.7.2-devpack -y --no-progress
+
       - name: Setup NuGet
         uses: nuget/setup-nuget@v2
         with:
