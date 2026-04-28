@@ -35,16 +35,6 @@ resource "azurerm_key_vault_secret" "sql_admin_password" {
   key_vault_id = azurerm_key_vault.main.id
 }
 
-resource "azurerm_key_vault_secret" "db_connection_string" {
-  name         = "eshop-db-connection-string"
-  value        = "PLACEHOLDER-set-after-database-provisioned"
-  key_vault_id = azurerm_key_vault.main.id
-
-  lifecycle {
-    ignore_changes = [value]
-  }
-}
-
 resource "azurerm_key_vault_secret" "appinsights_key" {
   name         = "eshop-appinsights-key"
   value        = "PLACEHOLDER-set-after-appinsights-provisioned"

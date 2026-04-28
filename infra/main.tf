@@ -80,3 +80,9 @@ module "secrets" {
   name_prefix         = local.name_prefix
   tags                = local.common_tags
 }
+
+resource "azurerm_key_vault_secret" "db_connection_string" {
+  name         = "eshop-db-connection-string"
+  value        = module.database.connection_string
+  key_vault_id = module.secrets.key_vault_id
+}
