@@ -32,8 +32,10 @@ jobs:
         id: meta
         shell: bash
         run: |
-          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          SHORT_SHA=$(echo "${GH_SHA}" | cut -c1-7)
           echo "tag=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+        env:
+          GH_SHA: ${{ github.sha }}
 
       - name: Azure Login
         uses: azure/login@v2

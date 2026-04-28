@@ -31,7 +31,9 @@ jobs:
       - name: Set image tag
         id: meta
         shell: bash
-        run: echo "tag=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
+        run: echo "tag=${RELEASE_TAG}" >> "$GITHUB_OUTPUT"
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
 
       - name: Azure Login
         uses: azure/login@v2

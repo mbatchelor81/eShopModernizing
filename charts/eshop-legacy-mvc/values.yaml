@@ -42,9 +42,9 @@ externalSecrets:
   secretStoreName: "vault-backend"
   keys:
     - name: ConnectionString
-      remoteRef: eshop/db-connection-string
+      remoteRef: eshop-db-connection-string
     - name: AppInsightsKey
-      remoteRef: eshop/appinsights-key
+      remoteRef: eshop-appinsights-key
 
 serviceAccount:
   create: true
