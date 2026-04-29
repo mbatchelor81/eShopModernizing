@@ -29,6 +29,29 @@ namespace eShopModernizedWebForms.Services
                 pageIndex, pageSize, items.Count, itemsOnPage);
         }
 
+        public PaginatedItemsViewModel<CatalogItem> SearchCatalogItems(string searchTerm, int pageSize = 10, int pageIndex = 0)
+        {
+            var sanitized = SearchInputValidator.Sanitize(searchTerm);
+            if (string.IsNullOrEmpty(sanitized))
+            {
+                return GetCatalogItemsPaginated(pageSize, pageIndex);
+            }
+
+            var items = ComposeCatalogItems(catalogItems);
+            var filtered = items
+                .Where(c => c.Name.IndexOf(sanitized, System.StringComparison.OrdinalIgnoreCase) >= 0)
+                .ToList();
+
+            var itemsOnPage = filtered
+                .OrderBy(c => c.Id)
+                .Skip(pageSize * pageIndex)
+                .Take(pageSize)
+                .ToList();
+
+            return new PaginatedItemsViewModel<CatalogItem>(
+                pageIndex, pageSize, filtered.Count, itemsOnPage);
+        }
+
         public CatalogItem FindCatalogItem(int id)
         {
             return catalogItems.FirstOrDefault(x => x.Id == id);

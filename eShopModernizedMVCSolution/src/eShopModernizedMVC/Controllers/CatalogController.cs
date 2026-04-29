@@ -30,6 +30,21 @@ namespace eShopModernizedMVC.Controllers
             return View(paginatedItems);
         }
 
+        // GET /Catalog/Search?searchTerm=foo&pageSize=10&pageIndex=0
+        public ActionResult Search(string searchTerm, int pageSize = 10, int pageIndex = 0)
+        {
+            _log.Info($"Now loading... /Catalog/Search?searchTerm={searchTerm}&pageSize={pageSize}&pageIndex={pageIndex}");
+
+            if (!string.IsNullOrEmpty(searchTerm) && !SearchInputValidator.IsValid(searchTerm))
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, "Invalid search term.");
+            }
+
+            var paginatedItems = _service.SearchCatalogItems(searchTerm, pageSize, pageIndex);
+            ChangeUriPlaceholder(paginatedItems.Data);
+            return View("Index", paginatedItems);
+        }
+
         // GET: Catalog/Details/5
         public ActionResult Details(int? id)
         {
