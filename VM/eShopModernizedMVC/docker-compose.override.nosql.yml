@@ -3,7 +3,7 @@ version: '3'
 services:
   eshop.modernized.mvc:
     environment:
-      - ConnectionString=Server=sql.data;Database=Microsoft.eShopOnContainers.Services.CatalogDb;User Id=sa;Password=Pass@word
+      - ConnectionString=Server=sql.data;Database=Microsoft.eShopOnContainers.Services.CatalogDb;User Id=sa;Password=${SA_PASSWORD}
       - UseMockData=False
       - UseCustomizationData=False
       - UseAzureStorage=False

@@ -3,7 +3,7 @@ version: '3.4'
 services:
   eshop.modernized.mvc:
     environment:
-      - ConnectionString=Server=sql.data;Database=Microsoft.eShopOnContainers.Services.CatalogDb;User Id=sa;Password=Pass@word
+      - ConnectionString=Server=sql.data;Database=Microsoft.eShopOnContainers.Services.CatalogDb;User Id=sa;Password=${SA_PASSWORD}
       - UseMockData=True
       - UseCustomizationData=False
       - UseAzureStorage=False
@@ -18,12 +18,12 @@ services:
 
   sql.data:
     environment:
-      - SA_PASSWORD=Pass@word
+      - SA_PASSWORD=${SA_PASSWORD}
       - ACCEPT_EULA=Y
     ports:
       - "5433:1433"
     healthcheck:
-      test: [ "CMD", "sqlcmd", "-U", "sa", "-P", "Pass@word", "-Q", "select 1" ]
+      test: [ "CMD", "sqlcmd", "-U", "sa", "-P", "${SA_PASSWORD}", "-Q", "select 1" ]
       interval: 1s
       retries: 20
 
