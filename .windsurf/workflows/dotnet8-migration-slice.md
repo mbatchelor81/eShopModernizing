@@ -13,7 +13,7 @@ Use this workflow inside a Worktree-mode local Cascade session when the demo goa
 2. Treat the existing .NET Framework MVC/WebForms/WCF projects as reference implementations; do not attempt to compile them on macOS unless explicitly asked.
 3. Keep new code under `eShopModernizedDotNet8/` or a clearly named `.NET 8` test/docs path.
 4. Prefer mock or in-memory catalog data first so SQL Server, Visual Studio, IIS, and Windows Containers are not required.
-5. Port one thin catalog behavior at a time: model, read API, list UI, create/edit validation, or local smoke-test docs.
+5. Port one bounded catalog browse/read behavior at a time: project foundation, domain model, in-memory service, paginated list UI, details UI, tests, or local smoke-test docs.
 6. Use ASP.NET Core and .NET 8 idioms while preserving business names from the legacy catalog where useful.
 7. Validate with `dotnet restore`, `dotnet build`, `dotnet test` when tests exist, and `dotnet run` for a local smoke test.
 8. Summarize what legacy behavior was ported, what remains legacy-only, and exactly how to run the .NET 8 slice on macOS.

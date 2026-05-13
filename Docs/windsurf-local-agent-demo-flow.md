@@ -23,10 +23,110 @@ Recommended modernization target:
 
 - Create a new `eShopModernizedDotNet8/` path.
 - Use ASP.NET Core on .NET 8.
-- Start with a thin catalog vertical slice.
+- Fully migrate one small, demonstrable path: the MVC catalog browse/read slice.
 - Use mock/in-memory data first so SQL Server and Windows Containers are not required.
 - Keep legacy MVC/WebForms/WCF code read-only unless an agent is explicitly extracting behavior.
 - Validate with `dotnet restore`, `dotnet build`, and `dotnet run` on macOS.
+
+## Actual modernization target
+
+Migrate the read-only catalog browsing path from the modernized MVC 5 app to a new .NET 8 ASP.NET Core app. This is intentionally specific enough to finish in one live session and visual enough to demo on a Mac.
+
+### Legacy source path
+
+```text
+eShopModernizedMVCSolution/src/eShopModernizedMVC/
+├── Controllers/CatalogController.cs
+│   ├── Index(pageSize, pageIndex)
+│   └── Details(id)
+├── Services/ICatalogService.cs
+├── Services/CatalogServiceMock.cs
+├── Models/CatalogItem.cs
+├── Models/CatalogBrand.cs
+├── Models/CatalogType.cs
+├── ViewModel/PaginatedItemsViewModel.cs
+├── Views/Catalog/Index.cshtml
+├── Views/Catalog/CatalogTable.cshtml
+├── Views/Catalog/Details.cshtml
+└── Setup/CatalogItems.csv
+```
+
+### New .NET 8 target path
+
+```text
+eShopModernizedDotNet8/
+├── eShopModernizedDotNet8.csproj
+├── Program.cs
+├── Domain/
+│   ├── CatalogItem.cs
+│   ├── CatalogBrand.cs
+│   ├── CatalogType.cs
+│   └── PaginatedItems.cs
+├── Services/
+│   ├── ICatalogService.cs
+│   └── InMemoryCatalogService.cs
+├── Pages/
+│   └── Catalog/
+│       ├── Index.cshtml
+│       ├── Index.cshtml.cs
+│       ├── Details.cshtml
+│       └── Details.cshtml.cs
+├── wwwroot/
+├── README.md
+└── Tests or smoke-test docs
+```
+
+### Target acceptance criteria
+
+- `dotnet build eShopModernizedDotNet8/eShopModernizedDotNet8.csproj` succeeds on macOS.
+- `dotnet run --project eShopModernizedDotNet8/eShopModernizedDotNet8.csproj` starts a local web app.
+- `/catalog` lists seeded catalog items from in-memory data.
+- `/catalog/details/{id}` shows name, description, brand, type, price, picture file name, and stock fields.
+- Pagination preserves the legacy behavior shape: `pageSize`, `pageIndex`, total items, current page, total pages, previous/next links.
+- The legacy .NET Framework app is not modified except as read-only reference.
+- No SQL Server, IIS, Windows Containers, Azure services, or secrets are required.
+
+### Why this is the right slice
+
+```text
+Too broad for one session                         Right-sized for one session
+┌──────────────────────────────┐                 ┌─────────────────────────────┐
+│ Whole MVC/WebForms/WCF repo  │                 │ MVC catalog browse/read     │
+│ Auth + CRUD + EF + images    │      ───▶       │ Index + Details + mock data │
+│ SQL + Windows containers     │                 │ Runs with dotnet on macOS   │
+└──────────────────────────────┘                 └─────────────────────────────┘
+```
+
+This gives you a real migration story without overcommitting: one legacy controller path, one service contract, one model set, two views, and a visible Mac-runnable outcome.
+
+## Parallel worktree execution model for this target
+
+Use a short foundation step, then fan out. This avoids creating four worktrees that all fight over the first project scaffold files.
+
+```text
+Main workspace
+    │
+    ├─ Prompt 1: plan target and lanes with /modernization-fanout
+    │
+    ├─ Worktree A: create .NET 8 foundation
+    │      └─ merge first after dotnet build succeeds
+    │
+    └─ Parallel work after foundation lands
+           ├─ Worktree B: migrate catalog domain + in-memory service
+           ├─ Worktree C: migrate Razor catalog list/details UI
+           └─ Worktree D: add tests, README, and migration map
+```
+
+Target lane ownership:
+
+| Lane | Owns | Avoids |
+| --- | --- | --- |
+| Foundation | `.csproj`, `Program.cs`, base Razor Pages app, README shell | Deep catalog behavior |
+| Domain/service | `Domain/`, `Services/`, seed data in code or JSON | Razor markup except compile fixes |
+| UI | `Pages/Catalog/`, `wwwroot/` catalog styling | Service internals |
+| Validation/docs | test project, README runbook, migration map | Production behavior changes |
+
+If you need to keep the demo shorter, run only Foundation + Domain/service + UI. The app can still build and run; tests/docs become the backup lane.
 
 The PowerShell hook entries in `.windsurf/hooks.json` are Windows fallbacks. On macOS, Windsurf should use the bash/python `command` entries:
 
@@ -67,7 +167,7 @@ You do not need to remove the PowerShell entries for a Mac demo; they make the s
 │  Agent Command Center Space: eShop Modernization Sprint                    │
 │  ┌──────────────────┬──────────────────┬──────────────────┬────────────┐  │
 │  │ Local agent 1    │ Local agent 2    │ Local agent 3    │ Local      │  │
-│  │ .NET 8 skeleton │ Catalog API      │ Razor UI slice   │ migration  │  │
+│  │ .NET 8 base     │ Catalog service │ Razor UI slice   │ validation │  │
 │  │ Worktree A       │ Worktree B       │ Worktree C       │ Worktree D │  │
 │  └────────┬─────────┴────────┬─────────┴────────┬─────────┴─────┬──────┘  │
 │           │                  │                  │               │         │
@@ -160,13 +260,13 @@ Run this in the main Cascade session, not in a worktree:
 
 ```text
 /modernization-fanout
-Plan a local-only Agent Command Center sprint to modernize this legacy .NET Framework eShop repo into a Mac-runnable .NET 8 ASP.NET Core catalog slice. Use four Worktree-mode Cascade sessions: .NET 8 app skeleton, catalog domain/API extraction, Razor UI slice, and migration validation/docs; keep lanes non-overlapping and list exact files, validation commands, merge order, and risks.
+Plan a local-only Agent Command Center sprint to migrate the MVC catalog browse/read path into a Mac-runnable .NET 8 ASP.NET Core app. Use one foundation worktree first, then three parallel Worktree-mode sessions for catalog domain/service, Razor list/details UI, and validation/docs; keep lanes non-overlapping and list exact files, validation commands, merge order, and risks.
 ```
 
 Expected agent output:
 
 - One Space name.
-- Four lane cards for a .NET 8 modernization path.
+- One foundation lane plus three parallel lane cards for the .NET 8 catalog browse/read migration.
 - Exact files for each lane.
 - Copy/paste prompts for each agent.
 - Validation command per lane.
@@ -180,18 +280,18 @@ What to say:
 
 In Agent Command Center:
 
-1. Start four new local Cascade sessions.
+1. Start one foundation Cascade session in Worktree mode.
 2. Put each session in the `eShop Modernization Sprint` Space.
-3. Start each session in Worktree mode.
-4. Paste one prompt from the sections below into each session.
+3. Merge the foundation worktree after it builds.
+4. Start the remaining three sessions in Worktree mode and paste one prompt from the sections below into each session.
 
-### Agent 1: .NET 8 app skeleton
+### Agent 1: .NET 8 app foundation
 
 Use workflow: `/dotnet8-migration-slice`
 
 ```text
 /dotnet8-migration-slice
-In this local worktree, create the smallest Mac-runnable .NET 8 ASP.NET Core catalog app skeleton under `eShopModernizedDotNet8/`. Use mock/in-memory catalog data, avoid SQL Server and Windows Containers, and validate with `dotnet restore` and `dotnet build`.
+In this local worktree, create only the foundation for a Mac-runnable .NET 8 ASP.NET Core Razor Pages app under `eShopModernizedDotNet8/`. Add the project file, `Program.cs`, base layout/static assets, and a README stub; do not migrate catalog behavior yet, and validate with `dotnet restore` and `dotnet build`.
 ```
 
 Suggested file scope:
@@ -199,7 +299,8 @@ Suggested file scope:
 - `eShopModernizedDotNet8/`
 - `eShopModernizedDotNet8/eShopModernizedDotNet8.csproj`
 - `eShopModernizedDotNet8/Program.cs`
-- `eShopModernizedDotNet8/appsettings.Development.json`
+- `eShopModernizedDotNet8/Pages/Shared/`
+- `eShopModernizedDotNet8/wwwroot/`
 - `eShopModernizedDotNet8/README.md`
 
 Validation to request:
@@ -216,21 +317,25 @@ What this showcases:
 - Worktree-isolated greenfield scaffolding
 - Local `dotnet` validation instead of legacy Windows build tooling
 
-### Agent 2: catalog domain and API extraction
+### Agent 2: catalog domain and service migration
 
 Use workflow: `/dotnet8-migration-slice`
 
 ```text
 /dotnet8-migration-slice
-In this local worktree, inspect the legacy MVC catalog model and service flow, then add a focused .NET 8 catalog domain model, in-memory repository, and minimal API endpoints under `eShopModernizedDotNet8/`. Keep the legacy project read-only and validate with `dotnet build`.
+In this local worktree, migrate the legacy MVC catalog browse/read model into .NET 8 domain and service classes. Use `CatalogItem`, `CatalogBrand`, `CatalogType`, `PaginatedItems`, and an in-memory catalog service seeded from the legacy CSV/mock data; keep legacy files read-only and validate with `dotnet build`.
 ```
 
 Suggested file scope:
 
 - Read-only reference: `eShopModernizedMVCSolution/src/eShopModernizedMVC/Models/CatalogItem.cs`
+- Read-only reference: `eShopModernizedMVCSolution/src/eShopModernizedMVC/Models/CatalogBrand.cs`
+- Read-only reference: `eShopModernizedMVCSolution/src/eShopModernizedMVC/Models/CatalogType.cs`
+- Read-only reference: `eShopModernizedMVCSolution/src/eShopModernizedMVC/Services/CatalogServiceMock.cs`
+- Read-only reference: `eShopModernizedMVCSolution/src/eShopModernizedMVC/Setup/CatalogItems.csv`
 - Read-only reference: `eShopModernizedMVCSolution/src/eShopModernizedMVC/Controllers/CatalogController.cs`
 - `eShopModernizedDotNet8/Domain/`
-- `eShopModernizedDotNet8/Data/`
+- `eShopModernizedDotNet8/Services/`
 - `eShopModernizedDotNet8/Program.cs`
 
 Validation to request:
@@ -244,7 +349,7 @@ What this showcases:
 
 - Local agent reads legacy code and ports only the behavior needed for a vertical slice
 - The old project stays stable while new .NET 8 code moves quickly
-- API modernization can happen in parallel with UI work
+- Service modernization can happen in parallel with UI work after the foundation lands
 
 ### Agent 3: Razor UI slice
 
@@ -252,13 +357,15 @@ Use workflow: `/dotnet8-migration-slice`
 
 ```text
 /dotnet8-migration-slice
-In this local worktree, add a minimal Razor Pages or MVC UI slice to the .NET 8 app that lists catalog items from the new in-memory catalog service. Keep styling simple, avoid database dependencies, and validate with `dotnet build` plus a local `dotnet run` smoke test if possible.
+In this local worktree, migrate the MVC catalog Index, CatalogTable, and Details views into Razor Pages under `eShopModernizedDotNet8/Pages/Catalog`. Preserve the visible fields and pagination shape, consume the catalog service interface, avoid database dependencies, and validate with `dotnet build` plus `dotnet run` if possible.
 ```
 
 Suggested file scope:
 
 - `eShopModernizedDotNet8/Pages/`
-- `eShopModernizedDotNet8/Views/`
+- Read-only reference: `eShopModernizedMVCSolution/src/eShopModernizedMVC/Views/Catalog/Index.cshtml`
+- Read-only reference: `eShopModernizedMVCSolution/src/eShopModernizedMVC/Views/Catalog/CatalogTable.cshtml`
+- Read-only reference: `eShopModernizedMVCSolution/src/eShopModernizedMVC/Views/Catalog/Details.cshtml`
 - `eShopModernizedDotNet8/wwwroot/`
 - `eShopModernizedDotNet8/Program.cs`
 - `eShopModernizedDotNet8/README.md`
@@ -283,13 +390,14 @@ Use workflow: `/dotnet8-migration-slice`
 
 ```text
 /dotnet8-migration-slice
-In this local worktree, add focused validation for the .NET 8 catalog slice and document how to run it on macOS. Prefer small unit tests if the new project has testable domain logic; otherwise add a concise smoke-test checklist and validate with `dotnet build`.
+In this local worktree, add focused validation and documentation for the .NET 8 catalog browse/read slice. Add small unit tests for pagination and details lookup if practical, document the legacy-to-.NET 8 file mapping and macOS run commands, and validate with `dotnet build` plus `dotnet test` if a test project is added.
 ```
 
 Suggested file scope:
 
 - `eShopModernizedDotNet8.Tests/` if the lane adds a small test project
 - `eShopModernizedDotNet8/README.md`
+- `Docs/windsurf-dotnet8-catalog-migration-map.md`
 - `Docs/windsurf-local-agent-demo-flow.md` only if prompt updates are needed
 - Do not touch legacy production behavior just to make testing easier
 
@@ -358,15 +466,15 @@ Review the completed local worktree agents in the `eShop Modernization Sprint` S
 
 Recommended merge order:
 
-1. .NET 8 app skeleton.
-2. Catalog domain/API extraction.
+1. .NET 8 app foundation.
+2. Catalog domain/service migration.
 3. Razor UI slice.
 4. Migration validation and docs.
 
 Why this order works:
 
-- The skeleton establishes the project shape.
-- Domain/API work should land before UI consumes it.
+- The foundation establishes the project shape.
+- Domain/service work should land before UI consumes it.
 - UI lands after the app can build.
 - Validation/docs lands last so it reflects the final structure.
 
@@ -414,8 +522,8 @@ Use this as the copy/paste script during the demo.
 ### Prompt 1: main planning agent
 
 ```text
-/dotnet8-migration-slice
-Plan a local-only Agent Command Center sprint to modernize this legacy .NET Framework eShop repo into a Mac-runnable .NET 8 ASP.NET Core catalog slice. Use four Worktree-mode Cascade sessions: .NET 8 app skeleton, catalog domain/API extraction, Razor UI slice, and migration validation/docs; keep lanes non-overlapping and list exact files, validation commands, merge order, and risks.
+/modernization-fanout
+Plan a local-only Agent Command Center sprint to migrate the MVC catalog browse/read path into a Mac-runnable .NET 8 ASP.NET Core app. Use one foundation worktree first, then three parallel Worktree-mode sessions for catalog domain/service, Razor list/details UI, and validation/docs; keep lanes non-overlapping and list exact files, validation commands, merge order, and risks.
 ```
 
 ### Prompt 2: hook explainer
@@ -424,32 +532,32 @@ Plan a local-only Agent Command Center sprint to modernize this legacy .NET Fram
 Inspect `.windsurf/hooks.json` and `.windsurf/scripts/` and summarize how the local setup hook, command guard, and post-write cleanup support this demo. Use read-only inspection plus syntax validation only; do not run destructive git commands.
 ```
 
-### Prompt 3: .NET 8 skeleton local worktree agent
-
-```text
-/modernization-fanout
-In this local worktree, create the smallest Mac-runnable .NET 8 ASP.NET Core catalog app skeleton under `eShopModernizedDotNet8/`. Use mock/in-memory catalog data, avoid SQL Server and Windows Containers, and validate with `dotnet restore` and `dotnet build`.
-```
-
-### Prompt 4: catalog API local worktree agent
+### Prompt 3: .NET 8 foundation local worktree agent
 
 ```text
 /dotnet8-migration-slice
-In this local worktree, inspect the legacy MVC catalog model and service flow, then add a focused .NET 8 catalog domain model, in-memory repository, and minimal API endpoints under `eShopModernizedDotNet8/`. Keep the legacy project read-only and validate with `dotnet build`.
+In this local worktree, create only the foundation for a Mac-runnable .NET 8 ASP.NET Core Razor Pages app under `eShopModernizedDotNet8/`. Add the project file, `Program.cs`, base layout/static assets, and a README stub; do not migrate catalog behavior yet, and validate with `dotnet restore` and `dotnet build`.
+```
+
+### Prompt 4: catalog domain/service local worktree agent
+
+```text
+/dotnet8-migration-slice
+In this local worktree, migrate the legacy MVC catalog browse/read model into .NET 8 domain and service classes. Use `CatalogItem`, `CatalogBrand`, `CatalogType`, `PaginatedItems`, and an in-memory catalog service seeded from the legacy CSV/mock data; keep legacy files read-only and validate with `dotnet build`.
 ```
 
 ### Prompt 5: Razor UI local worktree agent
 
 ```text
 /dotnet8-migration-slice
-In this local worktree, add a minimal Razor Pages or MVC UI slice to the .NET 8 app that lists catalog items from the new in-memory catalog service. Keep styling simple, avoid database dependencies, and validate with `dotnet build` plus a local `dotnet run` smoke test if possible.
+In this local worktree, migrate the MVC catalog Index, CatalogTable, and Details views into Razor Pages under `eShopModernizedDotNet8/Pages/Catalog`. Preserve the visible fields and pagination shape, consume the catalog service interface, avoid database dependencies, and validate with `dotnet build` plus `dotnet run` if possible.
 ```
 
 ### Prompt 6: validation local worktree agent
 
 ```text
 /dotnet8-migration-slice
-In this local worktree, add focused validation for the .NET 8 catalog slice and document how to run it on macOS. Prefer small unit tests if the new project has testable domain logic; otherwise add a concise smoke-test checklist and validate with `dotnet build`.
+In this local worktree, add focused validation and documentation for the .NET 8 catalog browse/read slice. Add small unit tests for pagination and details lookup if practical, document the legacy-to-.NET 8 file mapping and macOS run commands, and validate with `dotnet build` plus `dotnet test` if a test project is added.
 ```
 
 ### Prompt 7: status update for any running agent
