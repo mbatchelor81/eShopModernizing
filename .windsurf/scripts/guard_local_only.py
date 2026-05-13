@@ -13,6 +13,8 @@ BLOCKED_PATTERNS = [
 
 GIT_VALUE_OPTIONS = {
     "-c",
+    "-C",
+    "--config-env",
     "--exec-path",
     "--git-dir",
     "--namespace",
@@ -21,8 +23,12 @@ GIT_VALUE_OPTIONS = {
 }
 
 
+def normalize_token(token):
+    return token.rstrip(";&|")
+
+
 def is_git_token(token):
-    executable = token.replace("\\", "/").rsplit("/", 1)[-1]
+    executable = normalize_token(token).replace("\\", "/").rsplit("/", 1)[-1]
     return executable in {"git", "git.exe"}
 
 
@@ -38,7 +44,7 @@ def iter_git_invocations(command):
 
         index = git_index + 1
         while index < len(tokens):
-            current = tokens[index]
+            current = normalize_token(tokens[index])
             if current in GIT_VALUE_OPTIONS:
                 index += 2
                 continue
@@ -49,7 +55,7 @@ def iter_git_invocations(command):
                 index += 1
                 continue
 
-            yield current, tokens[index + 1 :]
+            yield current, [normalize_token(argument) for argument in tokens[index + 1 :]]
             break
 
 
