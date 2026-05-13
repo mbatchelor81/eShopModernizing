@@ -8,9 +8,9 @@ BLOCKED_PATTERNS = [
     (r"\bdevin\b", "This demo is local-only; do not invoke Devin or Devin for Terminal."),
     (r"app\.devin\.ai", "This demo is local-only; do not open Devin cloud sessions."),
     (r"devin\s+for\s+terminal", "This demo is local-only; do not use Devin for Terminal."),
-    (r"\breset\s+--hard\b", "Destructive git resets are blocked during demo worktree sessions."),
-    (r"\bclean\s+-f", "Destructive git clean commands are blocked during demo worktree sessions."),
-    (r"\bpush\s+--force\b", "Force-push is blocked during local demo work."),
+    (r"\breset\b.*--hard(?![-\w])", "Destructive git resets are blocked during demo worktree sessions."),
+    (r"\bclean\b.*(?:-[A-Za-z]*f[A-Za-z]*|--force)(?![-\w])", "Destructive git clean commands are blocked during demo worktree sessions."),
+    (r"\bpush\b.*(?:--force(?![-\w])|\s-f(?:\s|$))", "Force-push is blocked during local demo work."),
 ]
 
 

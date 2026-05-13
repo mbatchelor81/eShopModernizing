@@ -4,19 +4,41 @@ import pathlib
 import sys
 
 
+BOM_UTF8 = b"\xef\xbb\xbf"
+
 TEXT_EXTENSIONS = {
     ".cs",
+    ".csproj",
     ".cshtml",
     ".aspx",
     ".ascx",
     ".config",
     ".json",
+    ".props",
     ".md",
     ".ps1",
+    ".sln",
+    ".targets",
+    ".xml",
     ".sh",
     ".yml",
     ".yaml",
 }
+
+
+def trim_trailing_whitespace(text):
+    cleaned_parts = []
+    for line in text.splitlines(keepends=True):
+        if line.endswith("\r\n"):
+            cleaned_parts.append(line[:-2].rstrip(" \t") + "\r\n")
+        elif line.endswith("\n"):
+            cleaned_parts.append(line[:-1].rstrip(" \t") + "\n")
+        elif line.endswith("\r"):
+            cleaned_parts.append(line[:-1].rstrip(" \t") + "\r")
+        else:
+            cleaned_parts.append(line.rstrip(" \t"))
+
+    return "".join(cleaned_parts)
 
 
 def main():
@@ -36,17 +58,18 @@ def main():
     if path.suffix.lower() not in TEXT_EXTENSIONS or not path.exists():
         return 0
 
+    raw = path.read_bytes()
+    had_bom = raw.startswith(BOM_UTF8)
+
     try:
-        text = path.read_text(encoding="utf-8-sig")
+        text = raw.decode("utf-8-sig")
     except UnicodeDecodeError:
         return 0
 
-    cleaned = "\n".join(line.rstrip() for line in text.splitlines())
-    if text.endswith(("\n", "\r\n")):
-        cleaned += "\n"
-
+    cleaned = trim_trailing_whitespace(text)
     if cleaned != text:
-        path.write_text(cleaned, encoding="utf-8")
+        encoding = "utf-8-sig" if had_bom else "utf-8"
+        path.write_text(cleaned, encoding=encoding)
 
     return 0
 
