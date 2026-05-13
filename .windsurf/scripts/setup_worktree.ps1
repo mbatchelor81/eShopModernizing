@@ -20,6 +20,7 @@ if (Get-Command git -ErrorAction SilentlyContinue) {
 }
 
 if (Get-Command nuget -ErrorAction SilentlyContinue) {
+    $restoreFailed = $false
     foreach ($solution in @(
         "eShopModernizedMVCSolution/eShopModernizedMVC.sln",
         "eShopModernizedWebFormsSolution/eShopModernizedWebForms.sln",
@@ -28,7 +29,15 @@ if (Get-Command nuget -ErrorAction SilentlyContinue) {
         if (Test-Path $solution) {
             Write-Host "Restoring $solution"
             nuget restore $solution
+            if ($LASTEXITCODE -ne 0) {
+                Write-Host "NuGet restore failed for $solution; continuing setup"
+                $restoreFailed = $true
+            }
         }
+    }
+    if ($restoreFailed) {
+        Write-Host "Worktree ready for local Cascade agent work with NuGet restore warnings"
+        exit 0
     }
 } else {
     Write-Host "nuget not found; skipping package restore"

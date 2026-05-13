@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 import re
+import shlex
 import sys
 
 
@@ -8,10 +9,69 @@ BLOCKED_PATTERNS = [
     (r"\bdevin\b", "This demo is local-only; do not invoke Devin or Devin for Terminal."),
     (r"app\.devin\.ai", "This demo is local-only; do not open Devin cloud sessions."),
     (r"devin\s+for\s+terminal", "This demo is local-only; do not use Devin for Terminal."),
-    (r"\breset\b.*--hard(?![-\w])", "Destructive git resets are blocked during demo worktree sessions."),
-    (r"\bclean\b.*(?:-[a-z]*f[a-z]*|--force)(?![-\w])", "Destructive git clean commands are blocked during demo worktree sessions."),
-    (r"\bpush\b.*(?:--force(?![-\w])|\s-[a-z]*f[a-z]*(?:\s|$))", "Force-push is blocked during local demo work."),
 ]
+
+GIT_VALUE_OPTIONS = {
+    "-C",
+    "-c",
+    "--exec-path",
+    "--git-dir",
+    "--namespace",
+    "--super-prefix",
+    "--work-tree",
+}
+
+
+def iter_git_invocations(command):
+    try:
+        tokens = shlex.split(command)
+    except ValueError:
+        return
+
+    for git_index, token in enumerate(tokens):
+        if token != "git":
+            continue
+
+        index = git_index + 1
+        while index < len(tokens):
+            current = tokens[index]
+            if current in GIT_VALUE_OPTIONS:
+                index += 2
+                continue
+            if any(current.startswith(option + "=") for option in GIT_VALUE_OPTIONS):
+                index += 1
+                continue
+            if current.startswith("-"):
+                index += 1
+                continue
+
+            yield current, tokens[index + 1 :]
+            break
+
+
+def has_short_force_flag(arguments):
+    return any(
+        argument.startswith("-")
+        and not argument.startswith("--")
+        and "f" in argument[1:]
+        for argument in arguments
+    )
+
+
+def is_blocked_git_invocation(command):
+    for subcommand, arguments in iter_git_invocations(command):
+        if subcommand == "reset" and "--hard" in arguments:
+            return "Destructive git resets are blocked during demo worktree sessions."
+        if subcommand == "clean" and ("--force" in arguments or has_short_force_flag(arguments)):
+            return "Destructive git clean commands are blocked during demo worktree sessions."
+        if subcommand == "push" and (
+            "--force" in arguments
+            or any(argument.startswith("--force=") for argument in arguments)
+            or has_short_force_flag(arguments)
+        ):
+            return "Force-push is blocked during local demo work."
+
+    return None
 
 
 def main():
@@ -30,6 +90,11 @@ def main():
         if re.search(pattern, normalized):
             print(message, file=sys.stderr)
             return 2
+
+    blocked_git_message = is_blocked_git_invocation(normalized)
+    if blocked_git_message:
+        print(blocked_git_message, file=sys.stderr)
+        return 2
 
     return 0
 

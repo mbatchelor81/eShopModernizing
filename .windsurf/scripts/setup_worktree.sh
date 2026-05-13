@@ -17,15 +17,23 @@ if command -v git >/dev/null 2>&1; then
 fi
 
 if command -v nuget >/dev/null 2>&1; then
+  restore_failed=0
   for solution in \
     eShopModernizedMVCSolution/eShopModernizedMVC.sln \
     eShopModernizedWebFormsSolution/eShopModernizedWebForms.sln \
     eShopModernizedNTier/eShopModernizedNTier.sln; do
     if [[ -f "$solution" ]]; then
       echo "Restoring $solution"
-      nuget restore "$solution"
+      if ! nuget restore "$solution"; then
+        echo "NuGet restore failed for $solution; continuing setup"
+        restore_failed=1
+      fi
     fi
   done
+  if [[ "$restore_failed" -ne 0 ]]; then
+    echo "Worktree ready for local Cascade agent work with NuGet restore warnings"
+    exit 0
+  fi
 else
   echo "nuget not found; skipping package restore"
 fi
