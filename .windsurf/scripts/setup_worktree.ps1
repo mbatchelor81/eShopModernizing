@@ -14,6 +14,9 @@ if ($env:ROOT_WORKSPACE_PATH -and (Test-Path $env:ROOT_WORKSPACE_PATH)) {
 
 if (Get-Command git -ErrorAction SilentlyContinue) {
     git worktree list
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "git worktree list failed; continuing setup"
+    }
 }
 
 if (Get-Command nuget -ErrorAction SilentlyContinue) {

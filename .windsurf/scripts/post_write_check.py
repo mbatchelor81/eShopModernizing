@@ -69,7 +69,7 @@ def main():
     cleaned = trim_trailing_whitespace(text)
     if cleaned != text:
         encoding = "utf-8-sig" if had_bom else "utf-8"
-        path.write_text(cleaned, encoding=encoding)
+        path.write_bytes(cleaned.encode(encoding))
 
     return 0
 
