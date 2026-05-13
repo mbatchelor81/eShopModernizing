@@ -27,6 +27,10 @@ def normalize_token(token):
     return token.rstrip(";&|")
 
 
+def has_shell_boundary(token):
+    return normalize_token(token) != token
+
+
 def is_git_token(token):
     executable = normalize_token(token).replace("\\", "/").rsplit("/", 1)[-1]
     return executable in {"git", "git.exe"}
@@ -55,7 +59,13 @@ def iter_git_invocations(command):
                 index += 1
                 continue
 
-            yield current, [normalize_token(argument) for argument in tokens[index + 1 :]]
+            arguments = []
+            for argument in tokens[index + 1 :]:
+                arguments.append(normalize_token(argument))
+                if has_shell_boundary(argument):
+                    break
+
+            yield current, arguments
             break
 
 
@@ -75,8 +85,7 @@ def is_blocked_git_invocation(command):
         if subcommand == "clean" and ("--force" in arguments or has_short_force_flag(arguments)):
             return "Destructive git clean commands are blocked during demo worktree sessions."
         if subcommand == "push" and (
-            "--force" in arguments
-            or any(argument.startswith("--force") for argument in arguments)
+            any(argument.startswith("--force") for argument in arguments)
             or has_short_force_flag(arguments)
         ):
             return "Force-push is blocked during local demo work."
