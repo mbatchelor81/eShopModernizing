@@ -2,7 +2,7 @@
 
 ## Demo goal
 
-Show that Windsurf 2.0 can coordinate a full modernization sprint using only local Cascade agents, Agent Command Center, Spaces, rules, workflows, hooks, and git worktrees. The live story is: encode team rules once, plan a local agent fleet, launch parallel worktrees, watch the work in Agent Command Center, review diffs, merge one lane at a time, and validate locally.
+Show that Windsurf 2.0 can coordinate a full modernization sprint using only local Cascade agents, Agent Command Center, Spaces, rules, workflows, hooks, and git worktrees. The recommended live story for macOS is: use local agents to carve a legacy .NET Framework eShop sample into a new Mac-runnable .NET 8 path, launch parallel worktrees, watch the work in Agent Command Center, review diffs, merge one lane at a time, and validate with local `dotnet` commands.
 
 ## Non-negotiables for the live demo
 
@@ -12,6 +12,31 @@ Show that Windsurf 2.0 can coordinate a full modernization sprint using only loc
 - Do not use cloud execution or external agent delegation.
 - Keep every lane scoped to non-overlapping files.
 - Merge only after human diff review.
+- Do not try to compile the existing .NET Framework 4.x MVC/WebForms/WCF apps on macOS during the live demo.
+- Make the primary modernization target a new .NET 8 ASP.NET Core path that can run locally on macOS.
+
+## macOS demo positioning
+
+The legacy source in this repository is intentionally .NET Framework-era code: ASP.NET MVC 5, WebForms, WCF, WinForms, Windows Containers, and older deployment manifests. That is exactly why the macOS demo should not focus on building the existing apps. Instead, use local agents to modernize toward a new .NET 8 Core slice that can run on a Mac while preserving the old code as the reference implementation.
+
+Recommended modernization target:
+
+- Create a new `eShopModernizedDotNet8/` path.
+- Use ASP.NET Core on .NET 8.
+- Start with a thin catalog vertical slice.
+- Use mock/in-memory data first so SQL Server and Windows Containers are not required.
+- Keep legacy MVC/WebForms/WCF code read-only unless an agent is explicitly extracting behavior.
+- Validate with `dotnet restore`, `dotnet build`, and `dotnet run` on macOS.
+
+The PowerShell hook entries in `.windsurf/hooks.json` are Windows fallbacks. On macOS, Windsurf should use the bash/python `command` entries:
+
+```json
+"command": "bash .windsurf/scripts/setup_worktree.sh"
+"command": "python3 .windsurf/scripts/guard_local_only.py"
+"command": "python3 .windsurf/scripts/post_write_check.py"
+```
+
+You do not need to remove the PowerShell entries for a Mac demo; they make the same repo usable on Windows machines too.
 
 ## Capabilities to explicitly showcase
 
@@ -19,7 +44,7 @@ Show that Windsurf 2.0 can coordinate a full modernization sprint using only loc
 | --- | --- | --- |
 | Rules | Local-only and .NET modernization constraints are automatic context | `.windsurf/rules/*.md` |
 | AGENTS.md | Root and directory-scoped project instructions load by path | `AGENTS.md`, solution-level `AGENTS.md` |
-| Workflows | Repeatable slash-command playbooks drive each lane | `.windsurf/workflows/*.md` |
+| Workflows | Repeatable slash-command playbooks drive each lane | `.windsurf/workflows/*.md`, especially `/dotnet8-migration-slice` |
 | Hooks | Worktree setup, command guardrails, and post-write cleanup run locally | `.windsurf/hooks.json`, `.windsurf/scripts/*` |
 | Worktrees | Each agent edits an isolated checkout | Windsurf Worktree mode |
 | Spaces | All local sessions share sprint context | Agent Command Center Space |
@@ -42,7 +67,7 @@ Show that Windsurf 2.0 can coordinate a full modernization sprint using only loc
 │  Agent Command Center Space: eShop Modernization Sprint                    │
 │  ┌──────────────────┬──────────────────┬──────────────────┬────────────┐  │
 │  │ Local agent 1    │ Local agent 2    │ Local agent 3    │ Local      │  │
-│  │ MVC validation   │ WebForms parity  │ Config hardening │ validation │  │
+│  │ .NET 8 skeleton │ Catalog API      │ Razor UI slice   │ migration  │  │
 │  │ Worktree A       │ Worktree B       │ Worktree C       │ Worktree D │  │
 │  └────────┬─────────┴────────┬─────────┴────────┬─────────┴─────┬──────┘  │
 │           │                  │                  │               │         │
@@ -58,21 +83,29 @@ Cascade sessions and local git worktrees.
 
 ## Pre-demo setup
 
-1. Open this repository in Windsurf 2.0.
-2. Open Agent Command Center.
-3. Create a Space named `eShop Modernization Sprint`.
-4. Open these files in tabs so the audience can see the repo-encoded operating model:
+1. Install .NET 8 SDK on the Mac if it is not already installed:
+
+```bash
+dotnet --info
+```
+
+2. Open this repository in Windsurf 2.0.
+3. Open Agent Command Center.
+4. Create a Space named `eShop Modernization Sprint`.
+5. Open these files in tabs so the audience can see the repo-encoded operating model:
    - `AGENTS.md`
    - `eShopModernizedMVCSolution/AGENTS.md`
    - `eShopModernizedWebFormsSolution/AGENTS.md`
    - `.windsurf/rules/local-agent-only.md`
    - `.windsurf/hooks.json`
    - `.windsurf/workflows/modernization-fanout.md`
-5. In the terminal, run:
+   - `.windsurf/workflows/dotnet8-migration-slice.md`
+6. In the terminal, run:
 
 ```bash
 git worktree list
 git status --short
+dotnet --info
 ```
 
 Expected: clean main workspace and no surprise local changes.
@@ -127,13 +160,13 @@ Run this in the main Cascade session, not in a worktree:
 
 ```text
 /modernization-fanout
-Plan a local-only Agent Command Center sprint for this repo using four Worktree-mode Cascade sessions: MVC catalog validation, WebForms validation parity, deployment configuration hardening, and focused modernization validation. Keep lanes non-overlapping, list exact files, validation commands, merge order, and risks.
+Plan a local-only Agent Command Center sprint to modernize this legacy .NET Framework eShop repo into a Mac-runnable .NET 8 ASP.NET Core catalog slice. Use four Worktree-mode Cascade sessions: .NET 8 app skeleton, catalog domain/API extraction, Razor UI slice, and migration validation/docs; keep lanes non-overlapping and list exact files, validation commands, merge order, and risks.
 ```
 
 Expected agent output:
 
 - One Space name.
-- Four lane cards.
+- Four lane cards for a .NET 8 modernization path.
 - Exact files for each lane.
 - Copy/paste prompts for each agent.
 - Validation command per lane.
@@ -152,131 +185,126 @@ In Agent Command Center:
 3. Start each session in Worktree mode.
 4. Paste one prompt from the sections below into each session.
 
-### Agent 1: MVC catalog validation
+### Agent 1: .NET 8 app skeleton
 
-Use workflow: `/catalog-bugfix`
+Use workflow: `/dotnet8-migration-slice`
 
 ```text
-/catalog-bugfix
-In this local worktree, harden MVC catalog create/edit validation so impossible stock thresholds are rejected before save. Stay within `eShopModernizedMVCSolution`, use existing MVC patterns, and run the MVC restore/build command or document any existing package drift.
+/dotnet8-migration-slice
+In this local worktree, create the smallest Mac-runnable .NET 8 ASP.NET Core catalog app skeleton under `eShopModernizedDotNet8/`. Use mock/in-memory catalog data, avoid SQL Server and Windows Containers, and validate with `dotnet restore` and `dotnet build`.
 ```
 
 Suggested file scope:
 
-- `eShopModernizedMVCSolution/src/eShopModernizedMVC/Models/CatalogItem.cs`
-- `eShopModernizedMVCSolution/src/eShopModernizedMVC/Controllers/CatalogController.cs`
-- `eShopModernizedMVCSolution/src/eShopModernizedMVC/Views/Catalog/*.cshtml`
-- `eShopModernizedMVCSolution/AGENTS.md`
+- `eShopModernizedDotNet8/`
+- `eShopModernizedDotNet8/eShopModernizedDotNet8.csproj`
+- `eShopModernizedDotNet8/Program.cs`
+- `eShopModernizedDotNet8/appsettings.Development.json`
+- `eShopModernizedDotNet8/README.md`
 
 Validation to request:
 
 ```bash
-nuget restore eShopModernizedMVCSolution/eShopModernizedMVC.sln
-msbuild eShopModernizedMVCSolution/eShopModernizedMVC.sln /t:Build /p:Configuration=Debug /p:Disable_CopyWebApplication=true
+dotnet restore eShopModernizedDotNet8/eShopModernizedDotNet8.csproj
+dotnet build eShopModernizedDotNet8/eShopModernizedDotNet8.csproj
 git diff --check
 ```
 
 What this showcases:
 
-- Directory-scoped `AGENTS.md`
-- .NET Framework modernization rules
-- Worktree-isolated code edits
-- Focused local validation
+- A concrete Mac-runnable modernization target
+- Worktree-isolated greenfield scaffolding
+- Local `dotnet` validation instead of legacy Windows build tooling
 
-### Agent 2: WebForms validation parity
+### Agent 2: catalog domain and API extraction
 
-Use workflow: `/catalog-bugfix`
+Use workflow: `/dotnet8-migration-slice`
 
 ```text
-/catalog-bugfix
-In this local worktree, compare the WebForms catalog create/edit validation path against the MVC lane and close the smallest safe parity gap. Keep markup, code-behind, and designer files synchronized, then run the WebForms restore/build command or document any existing package drift.
+/dotnet8-migration-slice
+In this local worktree, inspect the legacy MVC catalog model and service flow, then add a focused .NET 8 catalog domain model, in-memory repository, and minimal API endpoints under `eShopModernizedDotNet8/`. Keep the legacy project read-only and validate with `dotnet build`.
 ```
 
 Suggested file scope:
 
-- `eShopModernizedWebFormsSolution/src/eShopModernizedWebForms/Catalog/*.aspx`
-- `eShopModernizedWebFormsSolution/src/eShopModernizedWebForms/Catalog/*.aspx.cs`
-- `eShopModernizedWebFormsSolution/src/eShopModernizedWebForms/Models/CatalogItem.cs`
-- `eShopModernizedWebFormsSolution/AGENTS.md`
+- Read-only reference: `eShopModernizedMVCSolution/src/eShopModernizedMVC/Models/CatalogItem.cs`
+- Read-only reference: `eShopModernizedMVCSolution/src/eShopModernizedMVC/Controllers/CatalogController.cs`
+- `eShopModernizedDotNet8/Domain/`
+- `eShopModernizedDotNet8/Data/`
+- `eShopModernizedDotNet8/Program.cs`
 
 Validation to request:
 
 ```bash
-nuget restore eShopModernizedWebFormsSolution/eShopModernizedWebForms.sln
-msbuild eShopModernizedWebFormsSolution/eShopModernizedWebForms.sln /t:Build /p:Configuration=Debug /p:Disable_CopyWebApplication=true
+dotnet build eShopModernizedDotNet8/eShopModernizedDotNet8.csproj
 git diff --check
 ```
 
 What this showcases:
 
-- Parallel work on a second legacy UI stack
-- Path-scoped instructions for WebForms
-- Human-controlled parity decisions instead of broad refactoring
+- Local agent reads legacy code and ports only the behavior needed for a vertical slice
+- The old project stays stable while new .NET 8 code moves quickly
+- API modernization can happen in parallel with UI work
 
-### Agent 3: deployment configuration hardening
+### Agent 3: Razor UI slice
 
-Use workflow: `/config-hardening`
+Use workflow: `/dotnet8-migration-slice`
 
 ```text
-/config-hardening
-In this local worktree, review MVC and WebForms Docker Compose and Kubernetes configuration for demo-safe placeholders, environment-variable alignment, and Windows Container assumptions. Do not deploy anything; make only focused config edits or produce a concise findings list, then run `git diff --check`.
+/dotnet8-migration-slice
+In this local worktree, add a minimal Razor Pages or MVC UI slice to the .NET 8 app that lists catalog items from the new in-memory catalog service. Keep styling simple, avoid database dependencies, and validate with `dotnet build` plus a local `dotnet run` smoke test if possible.
 ```
 
 Suggested file scope:
 
-- `docker-compose.override.yml`
-- `eShopModernizedMVCSolution/docker-compose*.yml`
-- `eShopModernizedWebFormsSolution/docker-compose*.yml`
-- `Kubernetes/eShopModernizedMVC-K8s/**/*.yml`
-- `Kubernetes/eShopModernizedWebForms-K8s/**/*.yml`
-- `Kubernetes/AGENTS.md`
+- `eShopModernizedDotNet8/Pages/`
+- `eShopModernizedDotNet8/Views/`
+- `eShopModernizedDotNet8/wwwroot/`
+- `eShopModernizedDotNet8/Program.cs`
+- `eShopModernizedDotNet8/README.md`
 
 Validation to request:
 
 ```bash
+dotnet build eShopModernizedDotNet8/eShopModernizedDotNet8.csproj
+dotnet run --project eShopModernizedDotNet8/eShopModernizedDotNet8.csproj
 git diff --check
-```
-
-If `kubectl` is locally available:
-
-```bash
-kubectl apply --dry-run=client -f <edited-manifest>
 ```
 
 What this showcases:
 
-- Model-decision rules for container/cloud readiness
-- No public deployment
-- Local review of old Windows-container manifests
-- Secret and placeholder hygiene
+- A visible app running on the presenter's Mac
+- Local-only implementation and smoke testing
+- Parallel UI work against the new .NET 8 slice
 
-### Agent 4: focused validation strategy
+### Agent 4: migration validation and docs
 
-Use workflow: `/write-modernization-tests`
+Use workflow: `/dotnet8-migration-slice`
 
 ```text
-/write-modernization-tests
-In this local worktree, inspect whether the MVC or WebForms validation lane has an existing test pattern that can support a small focused test. If no practical test project exists, do not invent a large harness; create a concise manual validation checklist and run the narrowest restore/build validation available.
+/dotnet8-migration-slice
+In this local worktree, add focused validation for the .NET 8 catalog slice and document how to run it on macOS. Prefer small unit tests if the new project has testable domain logic; otherwise add a concise smoke-test checklist and validate with `dotnet build`.
 ```
 
 Suggested file scope:
 
-- Existing test project files if the agent finds a real pattern
-- `Docs/` checklist only if no practical test pattern exists
-- Do not touch production behavior just to make testing easier
+- `eShopModernizedDotNet8.Tests/` if the lane adds a small test project
+- `eShopModernizedDotNet8/README.md`
+- `Docs/windsurf-local-agent-demo-flow.md` only if prompt updates are needed
+- Do not touch legacy production behavior just to make testing easier
 
 Validation to request:
 
 ```bash
+dotnet build eShopModernizedDotNet8/eShopModernizedDotNet8.csproj
+dotnet test eShopModernizedDotNet8.Tests/eShopModernizedDotNet8.Tests.csproj
 git diff --check
-nuget restore eShopModernizedMVCSolution/eShopModernizedMVC.sln
-nuget restore eShopModernizedWebFormsSolution/eShopModernizedWebForms.sln
 ```
 
 What this showcases:
 
-- Testing judgment rather than test theater
-- The repo rule that no large harness should be invented when no pattern exists
+- Testing judgment while modernizing
+- A Mac-native validation loop
 - A local validation lane that can run in parallel with implementation
 
 ## Act 5: use Agent Command Center as the team-lead surface
@@ -330,16 +358,17 @@ Review the completed local worktree agents in the `eShop Modernization Sprint` S
 
 Recommended merge order:
 
-1. Deployment configuration hardening.
-2. Focused validation strategy.
-3. WebForms validation parity.
-4. MVC catalog validation.
+1. .NET 8 app skeleton.
+2. Catalog domain/API extraction.
+3. Razor UI slice.
+4. Migration validation and docs.
 
 Why this order works:
 
-- Config/docs lanes are less likely to conflict.
-- Validation strategy can inform the app lanes.
-- MVC and WebForms changes remain separate until the end.
+- The skeleton establishes the project shape.
+- Domain/API work should land before UI consumes it.
+- UI lands after the app can build.
+- Validation/docs lands last so it reflects the final structure.
 
 Manual review checklist for each lane:
 
@@ -363,18 +392,20 @@ python3 -m json.tool .windsurf/hooks.json
 For app lanes, run the relevant restore/build command if the local environment supports it:
 
 ```bash
-nuget restore eShopModernizedMVCSolution/eShopModernizedMVC.sln
-msbuild eShopModernizedMVCSolution/eShopModernizedMVC.sln /t:Build /p:Configuration=Debug /p:Disable_CopyWebApplication=true
+dotnet restore eShopModernizedDotNet8/eShopModernizedDotNet8.csproj
+dotnet build eShopModernizedDotNet8/eShopModernizedDotNet8.csproj
+dotnet run --project eShopModernizedDotNet8/eShopModernizedDotNet8.csproj
 ```
+
+If tests are added:
 
 ```bash
-nuget restore eShopModernizedWebFormsSolution/eShopModernizedWebForms.sln
-msbuild eShopModernizedWebFormsSolution/eShopModernizedWebForms.sln /t:Build /p:Configuration=Debug /p:Disable_CopyWebApplication=true
+dotnet test eShopModernizedDotNet8.Tests/eShopModernizedDotNet8.Tests.csproj
 ```
 
-What to say if restore/build has existing package drift:
+What to say about the legacy projects:
 
-> This is a legacy .NET Framework modernization repo, so local Linux validation may expose existing package-reference drift. The important demo behavior is that agents run the right local checks, report the exact failure, and keep their changes scoped.
+> The original MVC/WebForms/WCF apps are legacy .NET Framework and Windows-container oriented, so I am not trying to compile them on my Mac. The modernization path is a new .NET 8 slice that local agents can build and run here while using the old code as the behavioral reference.
 
 ## Exact prompt sequence
 
@@ -383,8 +414,8 @@ Use this as the copy/paste script during the demo.
 ### Prompt 1: main planning agent
 
 ```text
-/modernization-fanout
-Plan a local-only Agent Command Center sprint for this repo using four Worktree-mode Cascade sessions: MVC catalog validation, WebForms validation parity, deployment configuration hardening, and focused modernization validation. Keep lanes non-overlapping, list exact files, validation commands, merge order, and risks.
+/dotnet8-migration-slice
+Plan a local-only Agent Command Center sprint to modernize this legacy .NET Framework eShop repo into a Mac-runnable .NET 8 ASP.NET Core catalog slice. Use four Worktree-mode Cascade sessions: .NET 8 app skeleton, catalog domain/API extraction, Razor UI slice, and migration validation/docs; keep lanes non-overlapping and list exact files, validation commands, merge order, and risks.
 ```
 
 ### Prompt 2: hook explainer
@@ -393,32 +424,32 @@ Plan a local-only Agent Command Center sprint for this repo using four Worktree-
 Inspect `.windsurf/hooks.json` and `.windsurf/scripts/` and summarize how the local setup hook, command guard, and post-write cleanup support this demo. Use read-only inspection plus syntax validation only; do not run destructive git commands.
 ```
 
-### Prompt 3: MVC local worktree agent
+### Prompt 3: .NET 8 skeleton local worktree agent
 
 ```text
-/catalog-bugfix
-In this local worktree, harden MVC catalog create/edit validation so impossible stock thresholds are rejected before save. Stay within `eShopModernizedMVCSolution`, use existing MVC patterns, and run the MVC restore/build command or document any existing package drift.
+/modernization-fanout
+In this local worktree, create the smallest Mac-runnable .NET 8 ASP.NET Core catalog app skeleton under `eShopModernizedDotNet8/`. Use mock/in-memory catalog data, avoid SQL Server and Windows Containers, and validate with `dotnet restore` and `dotnet build`.
 ```
 
-### Prompt 4: WebForms local worktree agent
+### Prompt 4: catalog API local worktree agent
 
 ```text
-/catalog-bugfix
-In this local worktree, compare the WebForms catalog create/edit validation path against the MVC lane and close the smallest safe parity gap. Keep markup, code-behind, and designer files synchronized, then run the WebForms restore/build command or document any existing package drift.
+/dotnet8-migration-slice
+In this local worktree, inspect the legacy MVC catalog model and service flow, then add a focused .NET 8 catalog domain model, in-memory repository, and minimal API endpoints under `eShopModernizedDotNet8/`. Keep the legacy project read-only and validate with `dotnet build`.
 ```
 
-### Prompt 5: config local worktree agent
+### Prompt 5: Razor UI local worktree agent
 
 ```text
-/config-hardening
-In this local worktree, review MVC and WebForms Docker Compose and Kubernetes configuration for demo-safe placeholders, environment-variable alignment, and Windows Container assumptions. Do not deploy anything; make only focused config edits or produce a concise findings list, then run `git diff --check`.
+/dotnet8-migration-slice
+In this local worktree, add a minimal Razor Pages or MVC UI slice to the .NET 8 app that lists catalog items from the new in-memory catalog service. Keep styling simple, avoid database dependencies, and validate with `dotnet build` plus a local `dotnet run` smoke test if possible.
 ```
 
 ### Prompt 6: validation local worktree agent
 
 ```text
-/write-modernization-tests
-In this local worktree, inspect whether the MVC or WebForms validation lane has an existing test pattern that can support a small focused test. If no practical test project exists, do not invent a large harness; create a concise manual validation checklist and run the narrowest restore/build validation available.
+/dotnet8-migration-slice
+In this local worktree, add focused validation for the .NET 8 catalog slice and document how to run it on macOS. Prefer small unit tests if the new project has testable domain logic; otherwise add a concise smoke-test checklist and validate with `dotnet build`.
 ```
 
 ### Prompt 7: status update for any running agent
@@ -440,25 +471,25 @@ Review the completed local worktree agents in the `eShop Modernization Sprint` S
 
 ```text
 /config-hardening
-In this local worktree, review the WCF/WinForms N-tier configuration for local-demo readiness and Windows-only validation gaps. Preserve service contracts and client proxies unless a minimal config fix is clearly needed.
+In this local worktree, review the WCF/WinForms N-tier code as a modernization source map and identify what should become HTTP APIs, background services, or unsupported desktop-only behavior in a .NET 8 path. Do not edit production code unless a small documentation update is clearly useful.
 ```
 
 ### Backup 2: mock-data mode audit
 
 ```text
 /config-hardening
-In this local worktree, compare MVC and WebForms mock-data settings across `Web.config`, Docker Compose, and Kubernetes manifests. Keep changes minimal, prefer placeholders, and run `git diff --check`.
+In this local worktree, compare legacy MVC and WebForms mock-data settings and map them to the new .NET 8 appsettings model. Keep changes minimal, prefer placeholders, and validate with `dotnet build` if the .NET 8 project exists.
 ```
 
 ### Backup 3: modernization explainer
 
 ```text
 /modernization-fanout
-Plan a second local-only fan-out focused on WCF service hardening, WinForms modernization review, and deployment manifest cleanup. Keep every prompt under two sentences and avoid cloud execution.
+Plan a second local-only fan-out focused on extending the .NET 8 catalog slice with create/edit flows, Dockerfile portability, and migration documentation. Keep every prompt under two sentences and avoid cloud execution.
 ```
 
 ## Closing talk track
 
 > The demo showed a full local agent operating model: persistent repo rules, reusable workflows, safety hooks, isolated worktrees, visible parallel execution in Agent Command Center, and a human-controlled merge path.
 
-> The win is not just that one local agent can edit code. The win is that Windsurf can make local agents feel like a coordinated engineering team without handing execution to the cloud.
+> The modernization outcome is also practical on my Mac: the old .NET Framework applications remain as reference implementations, while the local agent fleet creates a .NET 8 path that can build and run locally without Windows Containers or Visual Studio.
