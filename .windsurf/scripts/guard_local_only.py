@@ -36,12 +36,11 @@ def is_git_token(token):
 
 
 def is_devin_invocation(command):
-    try:
-        tokens = shlex.split(command)
-    except ValueError:
-        return False
-
-    return any(normalize_token(token).replace("\\", "/").rsplit("/", 1)[-1] == "devin" for token in tokens)
+    tokens = re.split(r"[\s;&|]+", command)
+    return any(
+        normalize_token(token).replace("\\", "/").rsplit("/", 1)[-1] in {"devin", "devin.exe"}
+        for token in tokens
+    )
 
 
 def iter_git_invocations(command):
@@ -66,6 +65,10 @@ def iter_git_invocations(command):
             if current.startswith("-"):
                 index += 1
                 continue
+
+            if has_shell_boundary(tokens[index]):
+                yield current, []
+                break
 
             arguments = []
             for argument in tokens[index + 1 :]:
