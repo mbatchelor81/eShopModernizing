@@ -3,6 +3,7 @@ import json
 import re
 import shlex
 import sys
+from pathlib import PurePath
 
 
 BLOCKED_PATTERNS = [
@@ -12,7 +13,6 @@ BLOCKED_PATTERNS = [
 ]
 
 GIT_VALUE_OPTIONS = {
-    "-C",
     "-c",
     "--exec-path",
     "--git-dir",
@@ -22,6 +22,11 @@ GIT_VALUE_OPTIONS = {
 }
 
 
+def is_git_token(token):
+    executable = PurePath(token).name
+    return executable in {"git", "git.exe"}
+
+
 def iter_git_invocations(command):
     try:
         tokens = shlex.split(command)
@@ -29,7 +34,7 @@ def iter_git_invocations(command):
         return
 
     for git_index, token in enumerate(tokens):
-        if token != "git":
+        if not is_git_token(token):
             continue
 
         index = git_index + 1
@@ -66,7 +71,7 @@ def is_blocked_git_invocation(command):
             return "Destructive git clean commands are blocked during demo worktree sessions."
         if subcommand == "push" and (
             "--force" in arguments
-            or any(argument.startswith("--force=") for argument in arguments)
+            or any(argument.startswith("--force") for argument in arguments)
             or has_short_force_flag(arguments)
         ):
             return "Force-push is blocked during local demo work."
