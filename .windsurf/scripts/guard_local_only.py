@@ -6,7 +6,6 @@ import sys
 
 
 BLOCKED_PATTERNS = [
-    (r"\bdevin\b", "This demo is local-only; do not invoke Devin or Devin for Terminal."),
     (r"app\.devin\.ai", "This demo is local-only; do not open Devin cloud sessions."),
     (r"devin\s+for\s+terminal", "This demo is local-only; do not use Devin for Terminal."),
 ]
@@ -34,6 +33,15 @@ def has_shell_boundary(token):
 def is_git_token(token):
     executable = normalize_token(token).replace("\\", "/").rsplit("/", 1)[-1]
     return executable in {"git", "git.exe"}
+
+
+def is_devin_invocation(command):
+    try:
+        tokens = shlex.split(command)
+    except ValueError:
+        return False
+
+    return any(normalize_token(token).replace("\\", "/").rsplit("/", 1)[-1] == "devin" for token in tokens)
 
 
 def iter_git_invocations(command):
@@ -109,6 +117,10 @@ def main():
         if re.search(pattern, normalized):
             print(message, file=sys.stderr)
             return 2
+
+    if is_devin_invocation(normalized):
+        print("This demo is local-only; do not invoke Devin or Devin for Terminal.", file=sys.stderr)
+        return 2
 
     blocked_git_message = is_blocked_git_invocation(normalized)
     if blocked_git_message:

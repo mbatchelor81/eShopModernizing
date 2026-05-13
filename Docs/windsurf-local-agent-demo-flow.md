@@ -154,7 +154,7 @@ You do not need to remove the PowerShell entries for a Mac demo; they make the s
 
 ## Devin CLI subagent callout pack
 
-After the main Windsurf demo flow, show `.devin/agents/*/AGENT.md` as the reusable Devin CLI toolbox someone could invoke for follow-up local analysis, validation, and review.
+After the main Windsurf demo flow is complete, explicitly switch context to a separate optional Devin CLI follow-up. The Windsurf demo remains local Cascade agents only; `.devin/agents/*/AGENT.md` is a reusable Devin CLI toolbox for follow-up local analysis, validation, and review outside the Windsurf flow. For the short copy/paste prompt script, use `Docs/devin-cli-subagent-demo-prompts.md`.
 
 ```text
 Main demo: local Windsurf agents create the .NET 8 catalog slice

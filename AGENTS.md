@@ -2,7 +2,8 @@
 
 ## Demo constraint
 - This repository is prepared for a Windsurf 2.0 Agent Command Center demo using local Cascade agents only.
-- Do not use Devin, Devin for Terminal, cloud agents, or external agent execution in demo prompts or workflows.
+- Do not use Devin, Devin for Terminal, cloud agents, or external agent execution in Windsurf demo prompts or workflows.
+- `.devin/agents/*/AGENT.md` files are optional Devin CLI follow-up assets for after the Windsurf demo; do not invoke them from Windsurf local-agent prompts or workflows.
 - Prefer Worktree mode for agent work so parallel sessions stay isolated until a human reviews and merges them.
 
 ## Project overview
