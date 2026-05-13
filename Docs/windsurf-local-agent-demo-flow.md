@@ -150,6 +150,46 @@ You do not need to remove the PowerShell entries for a Mac demo; they make the s
 | Spaces | All local sessions share sprint context | Agent Command Center Space |
 | Agent Command Center | Parallel local work is visible as a board | Agent Command Center |
 | Local review/merge | Human lead reviews and merges one lane at a time | `/local-review-merge` |
+| Devin CLI subagents | Reusable expert tools for the modernization toolbox | `.devin/agents/*/AGENT.md` |
+
+## Devin CLI subagent callout pack
+
+After the main Windsurf demo flow, show `.devin/agents/*/AGENT.md` as the reusable Devin CLI toolbox someone could invoke for follow-up local analysis, validation, and review.
+
+```text
+Main demo: local Windsurf agents create the .NET 8 catalog slice
+After-demo CLI callout: repo-specific subagents become reusable expert tools
+
+┌─────────────────────────────┐
+│ eShop modernization toolbox │
+├──────────────┬──────────────┤
+│ Archaeology  │ Architecture │
+│ Parity       │ Hardening    │
+│ Review       │              │
+└──────────────┴──────────────┘
+```
+
+Recommended callout order:
+
+1. `legacy-archaeologist` — maps legacy MVC/WebForms/WCF/WinForms code into migration seams.
+2. `dotnet8-slice-architect` — designs the Mac-runnable .NET 8 target shape and worktree ownership.
+3. `catalog-parity-inspector` — compares legacy catalog behavior to the new .NET 8 slice.
+4. `config-secrets-hardener` — audits config/secrets surfaces and maps them to local-safe .NET 8 settings.
+5. `review-captain` — reviews worktree diffs for scope, validation, local-only compliance, and merge order.
+
+CLI-style prompts to show after the main flow:
+
+```text
+Use the legacy-archaeologist subagent to identify the next smallest .NET Framework feature path that could migrate after the catalog browse/read slice.
+```
+
+```text
+Use the catalog-parity-inspector subagent to compare the new `eShopModernizedDotNet8/Pages/Catalog` implementation against the legacy MVC catalog Index, CatalogTable, and Details views.
+```
+
+```text
+Use the review-captain subagent to review all completed worktree diffs and produce a merge-ready summary with validation evidence.
+```
 
 ## Demo architecture visual
 
@@ -200,6 +240,7 @@ dotnet --info
    - `.windsurf/hooks.json`
    - `.windsurf/workflows/modernization-fanout.md`
    - `.windsurf/workflows/dotnet8-migration-slice.md`
+   - `.devin/agents/`
 6. In the terminal, run:
 
 ```bash
