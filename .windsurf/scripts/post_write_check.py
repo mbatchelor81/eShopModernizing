@@ -15,6 +15,7 @@ TEXT_EXTENSIONS = {
     ".config",
     ".json",
     ".props",
+    ".py",
     ".md",
     ".ps1",
     ".sln",

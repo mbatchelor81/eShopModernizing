@@ -3,7 +3,6 @@ import json
 import re
 import shlex
 import sys
-from pathlib import PurePath
 
 
 BLOCKED_PATTERNS = [
@@ -23,7 +22,7 @@ GIT_VALUE_OPTIONS = {
 
 
 def is_git_token(token):
-    executable = PurePath(token).name
+    executable = token.replace("\\", "/").rsplit("/", 1)[-1]
     return executable in {"git", "git.exe"}
 
 
