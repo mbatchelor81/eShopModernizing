@@ -1,0 +1,25 @@
+{
+  "hooks": {
+    "post_setup_worktree": [
+      {
+        "command": "bash .windsurf/scripts/setup_worktree.sh",
+        "powershell": "powershell -ExecutionPolicy Bypass -File .windsurf/scripts/setup_worktree.ps1",
+        "show_output": true
+      }
+    ],
+    "pre_run_command": [
+      {
+        "command": "python3 .windsurf/scripts/guard_local_only.py",
+        "powershell": "python .windsurf/scripts/guard_local_only.py",
+        "show_output": true
+      }
+    ],
+    "post_write_code": [
+      {
+        "command": "python3 .windsurf/scripts/post_write_check.py",
+        "powershell": "python .windsurf/scripts/post_write_check.py",
+        "show_output": false
+      }
+    ]
+  }
+}
