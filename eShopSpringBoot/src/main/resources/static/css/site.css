@@ -1,0 +1,16 @@
+body {
+    padding-top: 0;
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+.table img {
+    object-fit: cover;
+}
+
+.card-img {
+    object-fit: contain;
+    padding: 10px;
+}

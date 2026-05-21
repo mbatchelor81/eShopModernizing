@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Catalog - eShop')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="container mt-4">
+    <h2>Catalog</h2>
+    <p>
+        <a th:href="@{/catalog/create}" class="btn btn-primary">Create New</a>
+    </p>
+
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Picture</th>
+            <th>Name</th>
+            <th>Brand</th>
+            <th>Type</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${paginatedItems.data()}">
+            <td>
+                <img th:src="@{/items/{id}/pic(id=${item.id})}" alt="pic"
+                     style="width:50px;height:50px;"/>
+            </td>
+            <td th:text="${item.name}"></td>
+            <td th:text="${item.catalogBrand?.brand}"></td>
+            <td th:text="${item.catalogType?.type}"></td>
+            <td th:text="${#numbers.formatDecimal(item.price, 1, 2)}"></td>
+            <td th:text="${item.availableStock}"></td>
+            <td>
+                <a th:href="@{/catalog/{id}(id=${item.id})}" class="btn btn-sm btn-info">Details</a>
+                <a th:href="@{/catalog/{id}/edit(id=${item.id})}" class="btn btn-sm btn-warning">Edit</a>
+                <a th:href="@{/catalog/{id}/delete(id=${item.id})}" class="btn btn-sm btn-danger">Delete</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <nav aria-label="Page navigation" th:if="${paginatedItems.totalPages() > 1}">
+        <ul class="pagination">
+            <li class="page-item" th:classappend="${paginatedItems.pageIndex() == 0} ? 'disabled'">
+                <a class="page-link"
+                   th:href="@{/catalog(pageSize=${pageSize}, pageIndex=${paginatedItems.pageIndex() - 1})}">Previous</a>
+            </li>
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, paginatedItems.totalPages() - 1)}"
+                th:classappend="${i == paginatedItems.pageIndex()} ? 'active'">
+                <a class="page-link" th:href="@{/catalog(pageSize=${pageSize}, pageIndex=${i})}"
+                   th:text="${i + 1}"></a>
+            </li>
+            <li class="page-item"
+                th:classappend="${paginatedItems.pageIndex() >= paginatedItems.totalPages() - 1} ? 'disabled'">
+                <a class="page-link"
+                   th:href="@{/catalog(pageSize=${pageSize}, pageIndex=${paginatedItems.pageIndex() + 1})}">Next</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<footer th:replace="~{fragments/layout :: scripts}"></footer>
+</body>
+</html>
