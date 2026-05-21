@@ -45,7 +45,10 @@ public class PicController {
                 return ResponseEntity.notFound().build();
             }
 
-            byte[] imageBytes = resource.getInputStream().readAllBytes();
+            byte[] imageBytes;
+            try (var is = resource.getInputStream()) {
+                imageBytes = is.readAllBytes();
+            }
             String mimeType = getMimeType(item.getPictureFileName());
 
             HttpHeaders headers = new HttpHeaders();
@@ -59,7 +62,9 @@ public class PicController {
 
     private String getMimeType(String filename) {
         if (filename == null) return "application/octet-stream";
-        String ext = filename.substring(filename.lastIndexOf('.')).toLowerCase();
+        int dotIndex = filename.lastIndexOf('.');
+        if (dotIndex < 0) return "application/octet-stream";
+        String ext = filename.substring(dotIndex).toLowerCase();
         return switch (ext) {
             case ".png" -> "image/png";
             case ".gif" -> "image/gif";

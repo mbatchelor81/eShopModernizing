@@ -11,6 +11,6 @@ public record PaginatedItems<T>(
 ) {
     public PaginatedItems(int pageIndex, int pageSize, long totalItems, List<T> data) {
         this(pageIndex, pageSize, totalItems,
-                (int) Math.ceil((double) totalItems / pageSize), data);
+                pageSize > 0 ? (int) Math.ceil((double) totalItems / pageSize) : 0, data);
     }
 }

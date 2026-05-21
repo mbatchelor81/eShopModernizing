@@ -68,6 +68,7 @@ public class CatalogServiceImpl implements CatalogService {
     @Override
     @Transactional
     public void createCatalogItem(CatalogItem catalogItem) {
+        resolveRelationships(catalogItem);
         catalogItemRepository.save(catalogItem);
         log.info("Created catalog item: {}", catalogItem.getName());
     }
@@ -75,8 +76,16 @@ public class CatalogServiceImpl implements CatalogService {
     @Override
     @Transactional
     public void updateCatalogItem(CatalogItem catalogItem) {
+        resolveRelationships(catalogItem);
         catalogItemRepository.save(catalogItem);
         log.info("Updated catalog item: {}", catalogItem.getId());
+    }
+
+    private void resolveRelationships(CatalogItem catalogItem) {
+        catalogItem.setCatalogType(
+                catalogTypeRepository.findById(catalogItem.getCatalogTypeId()).orElse(null));
+        catalogItem.setCatalogBrand(
+                catalogBrandRepository.findById(catalogItem.getCatalogBrandId()).orElse(null));
     }
 
     @Override
