@@ -102,17 +102,24 @@ public class CatalogServiceMock implements CatalogService {
     @Override
     public void createCatalogItem(CatalogItem catalogItem) {
         catalogItem.setId(idSequence.getAndIncrement());
+        resolveRelationships(catalogItem);
         catalogItems.add(catalogItem);
     }
 
     @Override
     public void updateCatalogItem(CatalogItem catalogItem) {
+        resolveRelationships(catalogItem);
         for (int i = 0; i < catalogItems.size(); i++) {
             if (catalogItems.get(i).getId().equals(catalogItem.getId())) {
                 catalogItems.set(i, catalogItem);
                 return;
             }
         }
+    }
+
+    private void resolveRelationships(CatalogItem item) {
+        item.setCatalogBrand(brands.stream().filter(b -> b.getId() == item.getCatalogBrandId()).findFirst().orElse(null));
+        item.setCatalogType(types.stream().filter(t -> t.getId() == item.getCatalogTypeId()).findFirst().orElse(null));
     }
 
     @Override
