@@ -83,9 +83,11 @@ public class CatalogServiceImpl implements CatalogService {
 
     private void resolveRelationships(CatalogItem catalogItem) {
         catalogItem.setCatalogType(
-                catalogTypeRepository.findById(catalogItem.getCatalogTypeId()).orElse(null));
+                catalogTypeRepository.findById(catalogItem.getCatalogTypeId())
+                        .orElseThrow(() -> new IllegalArgumentException("Catalog type not found: " + catalogItem.getCatalogTypeId())));
         catalogItem.setCatalogBrand(
-                catalogBrandRepository.findById(catalogItem.getCatalogBrandId()).orElse(null));
+                catalogBrandRepository.findById(catalogItem.getCatalogBrandId())
+                        .orElseThrow(() -> new IllegalArgumentException("Catalog brand not found: " + catalogItem.getCatalogBrandId())));
     }
 
     @Override

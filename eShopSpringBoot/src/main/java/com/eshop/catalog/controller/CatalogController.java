@@ -32,6 +32,8 @@ public class CatalogController {
     public String index(@RequestParam(defaultValue = "10") int pageSize,
                         @RequestParam(defaultValue = "0") int pageIndex,
                         Model model) {
+        if (pageSize < 1) pageSize = 10;
+        if (pageIndex < 0) pageIndex = 0;
         log.info("Now loading... /catalog?pageSize={}&pageIndex={}", pageSize, pageIndex);
         PaginatedItems<CatalogItem> paginatedItems = catalogService.getCatalogItemsPaginated(pageSize, pageIndex);
         model.addAttribute("paginatedItems", paginatedItems);
