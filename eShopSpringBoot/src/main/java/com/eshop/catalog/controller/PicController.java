@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 @Controller
 public class PicController {
@@ -40,7 +41,11 @@ public class PicController {
         }
 
         try {
-            ClassPathResource resource = new ClassPathResource("static/pics/" + item.getPictureFileName());
+            String filename = sanitizeFilename(item.getPictureFileName());
+            if (filename == null) {
+                return ResponseEntity.badRequest().build();
+            }
+            ClassPathResource resource = new ClassPathResource("static/pics/" + filename);
             if (!resource.exists()) {
                 return ResponseEntity.notFound().build();
             }
@@ -58,6 +63,13 @@ public class PicController {
             log.error("Error reading picture file for item {}", catalogItemId, e);
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    private String sanitizeFilename(String filename) {
+        if (filename == null || filename.isBlank()) return null;
+        String name = Path.of(filename).getFileName().toString();
+        if (name.contains("..") || name.contains("/") || name.contains("\\")) return null;
+        return name;
     }
 
     private String getMimeType(String filename) {

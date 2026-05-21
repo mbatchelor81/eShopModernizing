@@ -9,16 +9,16 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @Profile("mock")
 public class CatalogServiceMock implements CatalogService {
 
-    private final List<CatalogItem> catalogItems = new ArrayList<>();
+    private final List<CatalogItem> catalogItems = new CopyOnWriteArrayList<>();
     private final List<CatalogBrand> brands;
     private final List<CatalogType> types;
     private final AtomicInteger idSequence = new AtomicInteger(20);
