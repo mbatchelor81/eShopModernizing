@@ -76,8 +76,22 @@ public class CatalogServiceImpl implements CatalogService {
     @Override
     @Transactional
     public void updateCatalogItem(CatalogItem catalogItem) {
-        resolveRelationships(catalogItem);
-        catalogItemRepository.save(catalogItem);
+        CatalogItem existing = catalogItemRepository.findById(catalogItem.getId()).orElse(null);
+        if (existing == null) {
+            return;
+        }
+        existing.setName(catalogItem.getName());
+        existing.setDescription(catalogItem.getDescription());
+        existing.setPrice(catalogItem.getPrice());
+        existing.setPictureFileName(catalogItem.getPictureFileName());
+        existing.setAvailableStock(catalogItem.getAvailableStock());
+        existing.setRestockThreshold(catalogItem.getRestockThreshold());
+        existing.setMaxStockThreshold(catalogItem.getMaxStockThreshold());
+        existing.setOnReorder(catalogItem.isOnReorder());
+        existing.setCatalogTypeId(catalogItem.getCatalogTypeId());
+        existing.setCatalogBrandId(catalogItem.getCatalogBrandId());
+        resolveRelationships(existing);
+        catalogItemRepository.save(existing);
         log.info("Updated catalog item: {}", catalogItem.getId());
     }
 
