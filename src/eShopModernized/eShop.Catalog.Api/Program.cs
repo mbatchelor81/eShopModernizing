@@ -12,6 +12,13 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 
+// EM-94: HSTS for production environments
+builder.Services.AddHsts(options =>
+{
+    options.MaxAge = TimeSpan.FromSeconds(31536000);
+    options.IncludeSubDomains = true;
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -19,6 +26,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+else
+{
+    app.UseHsts();
+}
+
+// EM-94: Security headers middleware (OWASP A05)
+app.UseSecurityHeaders();
 
 app.UseHttpsRedirection();
 
