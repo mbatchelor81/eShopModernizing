@@ -174,7 +174,7 @@ namespace eShopModernizedMVC.Controllers
             return RedirectToAction("Index");
         }
 
-        private static readonly Regex SqlMetaCharPattern = new Regex(@"[;'\""\-\-\\/\*]", RegexOptions.Compiled);
+        private static readonly Regex SqlMetaCharPattern = new Regex(@"[;'\""]|--|/\*|\*/", RegexOptions.Compiled);
         private const int MaxSearchTermLength = 200;
 
         // GET: Catalog/Search?q=term

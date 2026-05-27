@@ -162,7 +162,7 @@ namespace eShopPorted.Tests
         [Fact]
         public void InputValidation_RejectsSqlMetacharacters()
         {
-            var pattern = new Regex(@"[;'\""\-\-\\/\*]", RegexOptions.Compiled);
+            var pattern = new Regex(@"[;'\""]|--|/\*|\*/", RegexOptions.Compiled);
 
             Assert.True(pattern.IsMatch("'; DROP TABLE--"));
             Assert.True(pattern.IsMatch("test'value"));
@@ -170,6 +170,8 @@ namespace eShopPorted.Tests
             Assert.True(pattern.IsMatch("test/*value"));
             Assert.False(pattern.IsMatch("Widget Alpha"));
             Assert.False(pattern.IsMatch("Gadget"));
+            Assert.False(pattern.IsMatch("T-Shirt"));
+            Assert.False(pattern.IsMatch("3/4 inch"));
         }
 
         public void Dispose()
