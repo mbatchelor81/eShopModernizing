@@ -15,7 +15,7 @@
             "value": "dev"
         },
         "adminPassword": {
-            "value": "${ADMIN_PASSWORD}"
+            "value": null
         },
         "vmImageSku": {
             "value": "2016-Datacenter-with-Containers"
