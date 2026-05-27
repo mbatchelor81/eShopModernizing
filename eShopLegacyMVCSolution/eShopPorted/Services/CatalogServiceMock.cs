@@ -68,7 +68,8 @@ namespace eShopPorted.Services
 
         public IEnumerable<CatalogItem> SearchCatalogItems(string searchTerm)
         {
-            return catalogItems
+            var items = ComposeCatalogItems(catalogItems);
+            return items
                 .Where(c => c.Name.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0)
                 .OrderBy(c => c.Id)
                 .ToList();
