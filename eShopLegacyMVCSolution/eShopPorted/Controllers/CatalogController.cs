@@ -158,13 +158,17 @@ public ActionResult Create([Bind("Id,Name,Description,Price,PictureFileName,Cata
             if (q.Length > MaxSearchTermLength)
             {
                 ModelState.AddModelError("q", $"Search term must not exceed {MaxSearchTermLength} characters.");
-                return View("Index", service.GetCatalogItemsPaginated(10, 0));
+                var paginatedItems = service.GetCatalogItemsPaginated(10, 0);
+                ChangeUriPlaceholder(paginatedItems.Data);
+                return View("Index", paginatedItems);
             }
 
             if (SqlMetaCharPattern.IsMatch(q))
             {
                 ModelState.AddModelError("q", "Search term contains invalid characters.");
-                return View("Index", service.GetCatalogItemsPaginated(10, 0));
+                var paginatedItems = service.GetCatalogItemsPaginated(10, 0);
+                ChangeUriPlaceholder(paginatedItems.Data);
+                return View("Index", paginatedItems);
             }
 
             var results = service.SearchCatalogItems(q).ToList();

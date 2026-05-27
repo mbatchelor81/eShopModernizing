@@ -190,13 +190,17 @@ namespace eShopModernizedMVC.Controllers
             if (q.Length > MaxSearchTermLength)
             {
                 ModelState.AddModelError("q", $"Search term must not exceed {MaxSearchTermLength} characters.");
-                return View("Index", _service.GetCatalogItemsPaginated(10, 0));
+                var paginatedItems = _service.GetCatalogItemsPaginated(10, 0);
+                ChangeUriPlaceholder(paginatedItems.Data);
+                return View("Index", paginatedItems);
             }
 
             if (SqlMetaCharPattern.IsMatch(q))
             {
                 ModelState.AddModelError("q", "Search term contains invalid characters.");
-                return View("Index", _service.GetCatalogItemsPaginated(10, 0));
+                var paginatedItems = _service.GetCatalogItemsPaginated(10, 0);
+                ChangeUriPlaceholder(paginatedItems.Data);
+                return View("Index", paginatedItems);
             }
 
             var results = _service.SearchCatalogItems(q).ToList();
