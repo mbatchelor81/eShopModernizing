@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Web.Mvc;
 using eShopModernizedMVC.Models;
 using eShopModernizedMVC.Services;
@@ -170,6 +172,37 @@ namespace eShopModernizedMVC.Controllers
             CatalogItem catalogItem = _service.FindCatalogItem(id);
             _service.RemoveCatalogItem(catalogItem);
             return RedirectToAction("Index");
+        }
+
+        private static readonly Regex SqlMetaCharPattern = new Regex(@"[;'\""\-\-\\/\*]", RegexOptions.Compiled);
+        private const int MaxSearchTermLength = 200;
+
+        // GET: Catalog/Search?q=term
+        public ActionResult Search(string q)
+        {
+            _log.Info($"Now loading... /Catalog/Search?q={q}");
+
+            if (string.IsNullOrWhiteSpace(q))
+            {
+                return RedirectToAction("Index");
+            }
+
+            if (q.Length > MaxSearchTermLength)
+            {
+                ModelState.AddModelError("q", $"Search term must not exceed {MaxSearchTermLength} characters.");
+                return View("Index", _service.GetCatalogItemsPaginated(10, 0));
+            }
+
+            if (SqlMetaCharPattern.IsMatch(q))
+            {
+                ModelState.AddModelError("q", "Search term contains invalid characters.");
+                return View("Index", _service.GetCatalogItemsPaginated(10, 0));
+            }
+
+            var results = _service.SearchCatalogItems(q).ToList();
+            ChangeUriPlaceholder(results);
+            ViewBag.SearchTerm = q;
+            return View("SearchResults", results);
         }
 
         protected override void Dispose(bool disposing)

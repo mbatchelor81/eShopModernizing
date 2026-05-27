@@ -66,6 +66,14 @@ namespace eShopPorted.Services
             catalogItems.Remove(catalogItem);
         }
 
+        public IEnumerable<CatalogItem> SearchCatalogItems(string searchTerm)
+        {
+            return catalogItems
+                .Where(c => c.Name.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0)
+                .OrderBy(c => c.Id)
+                .ToList();
+        }
+
         public void Dispose()
         {
         }

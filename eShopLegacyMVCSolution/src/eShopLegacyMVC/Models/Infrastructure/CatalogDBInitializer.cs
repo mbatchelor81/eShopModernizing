@@ -323,9 +323,21 @@ namespace eShopLegacyMVC.Models.Infrastructure
             return csvheaders;
         }
 
+        private static readonly HashSet<string> AllowedSequenceNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "catalog_type_hilo",
+            "catalog_brand_hilo",
+            "catalog_hilo"
+        };
+
         private static int GetSequenceIdFromSelectedDBSequence(CatalogDBContext context, string dBSequenceName)
         {
-            var rawQuery = context.Database.SqlQuery<Int64>($"SELECT NEXT VALUE FOR {dBSequenceName}");
+            if (!AllowedSequenceNames.Contains(dBSequenceName))
+            {
+                throw new ArgumentException($"Invalid sequence name: {dBSequenceName}");
+            }
+
+            var rawQuery = context.Database.SqlQuery<Int64>("SELECT NEXT VALUE FOR " + dBSequenceName);
             var sequenceId = (int)rawQuery.Single();
             return sequenceId;
         }
