@@ -15,7 +15,7 @@
             "value": "dev"
         },
         "adminPassword": {
-            "value": "YourPass@wordSuperStrongZXCVB"
+            "value": "${ADMIN_PASSWORD}"
         },
         "vmImageSku": {
             "value": "2016-Datacenter-with-Containers"

@@ -9,6 +9,7 @@
 .env
 .env.*
 !.env.example
+!.env.template
 !.env.*.example
 
 # User-specific files (MonoDevelop/Xamarin Studio)

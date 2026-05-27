@@ -20,7 +20,7 @@
     </EntryPoint>
     <!-- Pass environment variables to your container: -->
     <EnvironmentVariables>
-      <EnvironmentVariable Name="ConnectionString" Value="Data Source=eshopmodernized.sqldata,1433;Database=Microsoft.eShopOnContainers.Services.CatalogDb;User Id=sa;Password=Pass@word"/>
+      <EnvironmentVariable Name="ConnectionString" Value="[OverriddenInApplicationManifest]"/>
       <EnvironmentVariable Name="UseMockData" Value="False"/>
       <EnvironmentVariable Name="UseCustomizationData" Value="False"/>
       <EnvironmentVariable Name="UseAzureStorage" Value="False"/>
