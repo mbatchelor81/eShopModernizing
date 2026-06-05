@@ -118,14 +118,15 @@ public class CatalogGrpcService : Protos.CatalogService.CatalogServiceBase
                     await _db.SaveChangesAsync();
                     return new Empty();
                 }
-                catch (DbUpdateException) when (attempt < maxRetries - 1)
+                catch (DbUpdateException)
                 {
-                    _db.ChangeTracker.Clear();
+                    if (attempt < maxRetries - 1)
+                        _db.ChangeTracker.Clear();
+                    else
+                        throw new RpcException(new Status(StatusCode.Aborted,
+                            "Failed to create stock entry due to concurrent ID conflict"));
                 }
             }
-
-            throw new RpcException(new Status(StatusCode.Aborted,
-                "Failed to create stock entry due to concurrent ID conflict"));
         }
 
         await _db.SaveChangesAsync();
@@ -151,9 +152,13 @@ public class CatalogGrpcService : Protos.CatalogService.CatalogServiceBase
                 await _db.SaveChangesAsync();
                 return new Empty();
             }
-            catch (DbUpdateException) when (attempt < maxRetries - 1)
+            catch (DbUpdateException)
             {
-                _db.ChangeTracker.Clear();
+                if (attempt < maxRetries - 1)
+                    _db.ChangeTracker.Clear();
+                else
+                    throw new RpcException(new Status(StatusCode.Aborted,
+                        "Failed to create catalog item due to concurrent ID conflict"));
             }
         }
 
