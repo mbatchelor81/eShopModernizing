@@ -98,18 +98,34 @@ public class CatalogGrpcService : Protos.CatalogService.CatalogServiceBase
         }
         else
         {
-            var maxId = await _db.CatalogItemsStocks.AnyAsync()
-                ? await _db.CatalogItemsStocks.MaxAsync(i => i.StockId)
-                : 0;
-
-            var entity = new CatalogItemsStock
+            const int maxRetries = 3;
+            for (int attempt = 0; attempt < maxRetries; attempt++)
             {
-                StockId = maxId + 1,
-                CatalogItemId = request.CatalogItemId,
-                AvailableStock = request.AvailableStock,
-                Date = date
-            };
-            _db.CatalogItemsStocks.Add(entity);
+                try
+                {
+                    var maxId = await _db.CatalogItemsStocks.AnyAsync()
+                        ? await _db.CatalogItemsStocks.MaxAsync(i => i.StockId)
+                        : 0;
+
+                    var entity = new CatalogItemsStock
+                    {
+                        StockId = maxId + 1,
+                        CatalogItemId = request.CatalogItemId,
+                        AvailableStock = request.AvailableStock,
+                        Date = date
+                    };
+                    _db.CatalogItemsStocks.Add(entity);
+                    await _db.SaveChangesAsync();
+                    return new Empty();
+                }
+                catch (DbUpdateException) when (attempt < maxRetries - 1)
+                {
+                    _db.ChangeTracker.Clear();
+                }
+            }
+
+            throw new RpcException(new Status(StatusCode.Aborted,
+                "Failed to create stock entry due to concurrent ID conflict"));
         }
 
         await _db.SaveChangesAsync();
@@ -119,16 +135,30 @@ public class CatalogGrpcService : Protos.CatalogService.CatalogServiceBase
     public override async Task<Empty> CreateCatalogItem(
         CatalogItemMessage request, ServerCallContext context)
     {
-        var entity = request.ToEntity();
+        const int maxRetries = 3;
+        for (int attempt = 0; attempt < maxRetries; attempt++)
+        {
+            try
+            {
+                var entity = request.ToEntity();
 
-        var maxId = await _db.CatalogItems.AnyAsync()
-            ? await _db.CatalogItems.MaxAsync(i => i.Id)
-            : 0;
-        entity.Id = maxId + 1;
+                var maxId = await _db.CatalogItems.AnyAsync()
+                    ? await _db.CatalogItems.MaxAsync(i => i.Id)
+                    : 0;
+                entity.Id = maxId + 1;
 
-        _db.CatalogItems.Add(entity);
-        await _db.SaveChangesAsync();
-        return new Empty();
+                _db.CatalogItems.Add(entity);
+                await _db.SaveChangesAsync();
+                return new Empty();
+            }
+            catch (DbUpdateException) when (attempt < maxRetries - 1)
+            {
+                _db.ChangeTracker.Clear();
+            }
+        }
+
+        throw new RpcException(new Status(StatusCode.Aborted,
+            "Failed to create catalog item due to concurrent ID conflict"));
     }
 
     public override async Task<Empty> UpdateCatalogItem(

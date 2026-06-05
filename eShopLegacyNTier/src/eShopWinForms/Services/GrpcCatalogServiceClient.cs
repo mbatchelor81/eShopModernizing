@@ -16,7 +16,7 @@ namespace eShopWinForms.Services
         public GrpcCatalogServiceClient()
         {
             var endpoint = ConfigurationManager.AppSettings["GrpcServiceUrl"]
-                ?? "https://localhost:5001";
+                ?? "http://localhost:5001";
             _channel = GrpcChannel.ForAddress(endpoint);
             _client = new eShopGrpcService.Protos.CatalogService.CatalogServiceClient(_channel);
         }
