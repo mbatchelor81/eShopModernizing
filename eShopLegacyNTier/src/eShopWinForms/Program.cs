@@ -1,5 +1,5 @@
-﻿using eShopWinForms.Controllers;
-using eShopWinForms.eShopServiceReference;
+using eShopWinForms.Controllers;
+using eShopWinForms.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +20,7 @@ namespace eShopWinForms
             Application.SetCompatibleTextRenderingDefault(false);
 
             CatalogView catalogView = new CatalogView();
-            ICatalogService service = new eShopServiceReference.CatalogServiceClient();
+            ICatalogService service = new GrpcCatalogServiceClient();
             CatalogController catalogController = new CatalogController(service, catalogView);
 
             catalogController.LoadView();

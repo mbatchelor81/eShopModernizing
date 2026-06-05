@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Net;
-using eShopWinForms.eShopServiceReference;
+using eShopWinForms.Models;
+using eShopWinForms.Services;
 using System;
 
 namespace eShopWinForms.Controllers
