@@ -4,6 +4,7 @@ using Grpc.Net.Client;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Globalization;
 using System.Linq;
 
 namespace eShopWinForms.Services
@@ -62,7 +63,7 @@ namespace eShopWinForms.Services
         {
             var request = new eShopGrpcService.Protos.GetAvailableStockRequest
             {
-                Date = date.ToUniversalTime().ToTimestamp(),
+                Date = DateTime.SpecifyKind(date.Date, DateTimeKind.Utc).ToTimestamp(),
                 CatalogItemId = catalogItemId
             };
             var response = _client.GetAvailableStock(request);
@@ -76,7 +77,7 @@ namespace eShopWinForms.Services
                 StockId = catalogItemsStock.StockId,
                 CatalogItemId = catalogItemsStock.CatalogItemId,
                 AvailableStock = catalogItemsStock.AvailableStock,
-                Date = catalogItemsStock.Date.ToUniversalTime().ToTimestamp()
+                Date = DateTime.SpecifyKind(catalogItemsStock.Date.Date, DateTimeKind.Utc).ToTimestamp()
             };
             _client.CreateAvailableStock(request);
         }
@@ -100,7 +101,7 @@ namespace eShopWinForms.Services
         {
             var request = new eShopGrpcService.Protos.GetDiscountRequest
             {
-                Day = day.ToUniversalTime().ToTimestamp()
+                Day = DateTime.SpecifyKind(day.Date, DateTimeKind.Utc).ToTimestamp()
             };
             var response = _client.GetDiscount(request);
             return response.Discount != null ? MapDiscountItem(response.Discount) : null;
@@ -119,7 +120,7 @@ namespace eShopWinForms.Services
                 Id = msg.Id,
                 Description = msg.Description,
                 Name = msg.Name,
-                Price = decimal.TryParse(msg.Price, out var p) ? p : 0m,
+                Price = decimal.TryParse(msg.Price, NumberStyles.Number, CultureInfo.InvariantCulture, out var p) ? p : 0m,
                 Picturefilename = msg.Picturefilename,
                 CatalogBrandId = msg.CatalogBrandId,
                 CatalogTypeId = msg.CatalogTypeId,
@@ -156,7 +157,7 @@ namespace eShopWinForms.Services
                 Id = item.Id,
                 Description = item.Description ?? string.Empty,
                 Name = item.Name ?? string.Empty,
-                Price = item.Price.ToString("G"),
+                Price = item.Price.ToString("G", CultureInfo.InvariantCulture),
                 Picturefilename = item.Picturefilename ?? string.Empty,
                 CatalogBrandId = item.CatalogBrandId,
                 CatalogTypeId = item.CatalogTypeId

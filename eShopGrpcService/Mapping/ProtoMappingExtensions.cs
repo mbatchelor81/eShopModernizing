@@ -1,3 +1,4 @@
+using System.Globalization;
 using eShopGrpcService.Models;
 using eShopGrpcService.Protos;
 using Google.Protobuf.WellKnownTypes;
@@ -34,7 +35,7 @@ public static class ProtoMappingExtensions
             Id = entity.Id,
             Description = entity.Description ?? string.Empty,
             Name = entity.Name ?? string.Empty,
-            Price = entity.Price.ToString("G"),
+            Price = entity.Price.ToString("G", CultureInfo.InvariantCulture),
             Picturefilename = entity.Picturefilename ?? string.Empty,
             CatalogBrandId = entity.CatalogBrandId,
             CatalogTypeId = entity.CatalogTypeId
@@ -57,7 +58,7 @@ public static class ProtoMappingExtensions
             Id = msg.Id,
             Description = msg.Description,
             Name = msg.Name,
-            Price = decimal.TryParse(msg.Price, out var p) ? p : 0m,
+            Price = decimal.TryParse(msg.Price, NumberStyles.Number, CultureInfo.InvariantCulture, out var p) ? p : 0m,
             Picturefilename = msg.Picturefilename,
             CatalogBrandId = msg.CatalogBrandId,
             CatalogTypeId = msg.CatalogTypeId
@@ -72,7 +73,7 @@ public static class ProtoMappingExtensions
             StockId = entity.StockId,
             CatalogItemId = entity.CatalogItemId,
             AvailableStock = entity.AvailableStock,
-            Date = entity.Date.ToUniversalTime().ToTimestamp()
+            Date = DateTime.SpecifyKind(entity.Date.Date, DateTimeKind.Utc).ToTimestamp()
         };
     }
 
@@ -95,8 +96,8 @@ public static class ProtoMappingExtensions
         {
             Id = entity.Id,
             Size = entity.Size,
-            Start = entity.Start.ToUniversalTime().ToTimestamp(),
-            End = entity.End.ToUniversalTime().ToTimestamp()
+            Start = DateTime.SpecifyKind(entity.Start.Date, DateTimeKind.Utc).ToTimestamp(),
+            End = DateTime.SpecifyKind(entity.End.Date, DateTimeKind.Utc).ToTimestamp()
         };
     }
 
