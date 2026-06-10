@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Text.Json;
 
@@ -23,6 +24,18 @@ namespace eShopLegacy.Utilities
         {
             stream.Seek(0, SeekOrigin.Begin);
             return JsonSerializer.Deserialize<JsonElement>(stream, s_options);
+        }
+
+        public T? DeserializeBinary<T>(Stream stream)
+        {
+            stream.Seek(0, SeekOrigin.Begin);
+            return JsonSerializer.Deserialize<T>(stream, s_options);
+        }
+
+        public object? DeserializeBinary(Stream stream, Type type)
+        {
+            stream.Seek(0, SeekOrigin.Begin);
+            return JsonSerializer.Deserialize(stream, type, s_options);
         }
     }
 }
