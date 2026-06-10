@@ -1,6 +1,6 @@
 ---
 name: create-dotnet8-slice
-description: Step-by-step guide for creating a .NET 8 ASP.NET Core migration slice from a legacy eShop component. Use after analyzing the legacy component — covers project setup, model porting, controller creation, DI configuration, and validation.
+description: Step-by-step guide for creating a .NET 8 ASP.NET Core Razor Pages migration slice from a legacy eShop component. Use after analyzing the legacy component — covers project setup, model porting, Razor Page creation, DI configuration, and validation.
 ---
 
 # Create .NET 8 Migration Slice
@@ -24,8 +24,9 @@ This skill walks through building a Mac-runnable .NET 8 ASP.NET Core project tha
 ### 1. Create the project
 
 ```bash
+mkdir -p eShopModernizedDotNet8
 cd eShopModernizedDotNet8
-dotnet new webapi -n eShop.<SliceName> --no-https
+dotnet new webapp -n eShop.<SliceName> --no-https
 cd eShop.<SliceName>
 ```
 
@@ -63,53 +64,80 @@ Key changes:
 - Replace `virtual` navigation properties with nullable references
 - Use data annotations or Fluent API (prefer Fluent API for EF Core)
 
-### 3. Set up the DbContext
+### 3. Create the in-memory data service
 
-For initial slices, use in-memory database:
+Seed catalog data from a plain C# in-memory service (do not use EF Core InMemory provider):
 
 ```csharp
-public class SliceDbContext : DbContext
+public interface ICatalogService
 {
-    public SliceDbContext(DbContextOptions<SliceDbContext> options)
-        : base(options) { }
+    IReadOnlyList<CatalogItem> GetItems(int pageSize, int pageIndex);
+    CatalogItem? GetById(int id);
+    int Count { get; }
+}
 
-    public DbSet<CatalogItem> CatalogItems => Set<CatalogItem>();
+public class InMemoryCatalogService : ICatalogService
+{
+    private readonly List<CatalogItem> _items = SeedData.GetCatalogItems();
+
+    public IReadOnlyList<CatalogItem> GetItems(int pageSize, int pageIndex) =>
+        _items.OrderBy(i => i.Name)
+              .Skip(pageSize * pageIndex)
+              .Take(pageSize)
+              .ToList();
+
+    public CatalogItem? GetById(int id) =>
+        _items.FirstOrDefault(i => i.Id == id);
+
+    public int Count => _items.Count;
 }
 ```
 
 Register in `Program.cs`:
 ```csharp
-builder.Services.AddDbContext<SliceDbContext>(options =>
-    options.UseInMemoryDatabase("eShopSlice"));
+builder.Services.AddSingleton<ICatalogService, InMemoryCatalogService>();
 ```
 
-### 4. Create controllers
+### 4. Create Razor Pages
 
-Map legacy MVC controllers to ASP.NET Core Minimal APIs or Controllers:
+Use ASP.NET Core Razor Pages (not MVC controllers) per project rules:
 
 ```csharp
-[ApiController]
-[Route("api/[controller]")]
-public class CatalogController : ControllerBase
+// Pages/Catalog/Index.cshtml.cs
+public class IndexModel : PageModel
 {
-    private readonly SliceDbContext _db;
+    private readonly ICatalogService _catalog;
 
-    public CatalogController(SliceDbContext db) => _db = db;
+    public IndexModel(ICatalogService catalog) => _catalog = catalog;
 
-    [HttpGet]
-    public async Task<IActionResult> GetItems(
-        [FromQuery] int pageSize = 10,
-        [FromQuery] int pageIndex = 0)
+    public IReadOnlyList<CatalogItem> Items { get; private set; } = [];
+    [BindProperty(SupportsGet = true)] public int PageSize { get; set; } = 10;
+    [BindProperty(SupportsGet = true)] public int PageIndex { get; set; } = 0;
+    public int TotalItems { get; private set; }
+
+    public void OnGet()
     {
-        var items = await _db.CatalogItems
-            .OrderBy(i => i.Name)
-            .Skip(pageSize * pageIndex)
-            .Take(pageSize)
-            .ToListAsync();
-
-        return Ok(items);
+        Items = _catalog.GetItems(PageSize, PageIndex);
+        TotalItems = _catalog.Count;
     }
 }
+```
+
+```html
+@* Pages/Catalog/Index.cshtml *@
+@page
+@model IndexModel
+
+<h1>Catalog</h1>
+<table>
+    @foreach (var item in Model.Items)
+    {
+        <tr>
+            <td>@item.Name</td>
+            <td>@item.Price.ToString("C")</td>
+        </tr>
+    }
+</table>
 ```
 
 ### 5. Configure DI
@@ -143,17 +171,19 @@ builder.Services.Configure<CatalogSettings>(
     builder.Configuration.GetSection("CatalogSettings"));
 ```
 
-### 7. Add seed data (optional)
+### 7. Add seed data
 
-For demo/testing, seed mock data:
+Create a `SeedData` class that returns hardcoded catalog items:
 
 ```csharp
-if (app.Environment.IsDevelopment())
+public static class SeedData
 {
-    using var scope = app.Services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<SliceDbContext>();
-    db.CatalogItems.AddRange(SeedData.GetCatalogItems());
-    db.SaveChanges();
+    public static List<CatalogItem> GetCatalogItems() =>
+    [
+        new() { Id = 1, Name = ".NET Bot Black Hoodie", Price = 19.5m, CatalogTypeId = 2 },
+        new() { Id = 2, Name = ".NET Black & White Mug", Price = 8.5m, CatalogTypeId = 1 },
+        // ... mirror items from the legacy CatalogServiceMock
+    ];
 }
 ```
 
@@ -166,9 +196,9 @@ dotnet test   # if tests exist
 dotnet run    # verify endpoints work
 ```
 
-Test the API:
+Verify in browser:
 ```bash
-curl http://localhost:5000/api/catalog
+# Navigate to http://localhost:5000/Catalog
 ```
 
 ## Validation Checklist
