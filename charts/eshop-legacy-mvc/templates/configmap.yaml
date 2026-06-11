@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "eshop.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "eshop.labels" . | nindent 4 }}
+data:
+  UseMockData: {{ .Values.config.useMockData | quote }}
+  UseCustomizationData: {{ .Values.config.useCustomizationData | quote }}
+  UseAzureStorage: {{ .Values.config.useAzureStorage | quote }}
+  StorageConnectionString: {{ .Values.config.storageConnectionString | quote }}
+  UseAzureActiveDirectory: {{ .Values.config.useAzureActiveDirectory | quote }}
+  AzureActiveDirectoryClientId: {{ .Values.config.azureActiveDirectoryClientId | quote }}
+  AzureActiveDirectoryTenant: {{ .Values.config.azureActiveDirectoryTenant | quote }}
+  PostLogoutRedirectUri: {{ .Values.config.postLogoutRedirectUri | quote }}

@@ -1,0 +1,5 @@
+# Require review for workflow and infrastructure changes
+.github/workflows/ @mbatchelor81
+.github/actions/   @mbatchelor81
+infra/             @mbatchelor81
+charts/            @mbatchelor81

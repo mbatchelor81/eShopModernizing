@@ -1,0 +1,13 @@
+apiVersion: v2
+name: eshop-legacy-mvc
+description: Helm chart for eShopLegacyMVC — a .NET Framework catalog management application
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+maintainers:
+  - name: eShop Platform Team
+keywords:
+  - eshop
+  - dotnet-framework
+  - windows-containers
+  - legacy-modernization

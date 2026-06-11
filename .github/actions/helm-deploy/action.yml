@@ -1,0 +1,90 @@
+name: Helm Deploy
+description: Reusable composite action for Helm upgrades with rollback on failure
+
+inputs:
+  environment:
+    description: Target environment (dev, staging, prod)
+    required: true
+  release-name:
+    description: Helm release name
+    required: true
+    default: eshop-legacy-mvc
+  namespace:
+    description: Kubernetes namespace
+    required: true
+    default: eshop
+  chart-path:
+    description: Path to the Helm chart
+    required: true
+    default: charts/eshop-legacy-mvc
+  image-repository:
+    description: Container image repository
+    required: true
+  image-tag:
+    description: Container image tag
+    required: true
+  kubeconfig:
+    description: Base64-encoded kubeconfig
+    required: true
+  health-url:
+    description: URL for post-deploy smoke test
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Helm
+      uses: azure/setup-helm@v4
+
+    - name: Configure kubectl
+      shell: bash
+      run: |
+        echo "${{ inputs.kubeconfig }}" | base64 -d > /tmp/kubeconfig
+        echo "KUBECONFIG=/tmp/kubeconfig" >> "$GITHUB_ENV"
+
+    - name: Create namespace
+      shell: bash
+      run: |
+        kubectl create namespace ${{ inputs.namespace }} --dry-run=client -o yaml | kubectl apply -f -
+
+    - name: Helm Upgrade
+      shell: bash
+      run: |
+        VALUES_FILE="${{ inputs.chart-path }}/values.yaml"
+        ENV_VALUES="${{ inputs.chart-path }}/values-${{ inputs.environment }}.yaml"
+
+        HELM_ARGS="--install --wait --timeout 10m"
+        HELM_ARGS="$HELM_ARGS --namespace ${{ inputs.namespace }}"
+        HELM_ARGS="$HELM_ARGS --set image.repository=${{ inputs.image-repository }}"
+        HELM_ARGS="$HELM_ARGS --set image.tag=${{ inputs.image-tag }}"
+        HELM_ARGS="$HELM_ARGS -f $VALUES_FILE"
+
+        if [ -f "$ENV_VALUES" ]; then
+          HELM_ARGS="$HELM_ARGS -f $ENV_VALUES"
+        fi
+
+        helm upgrade ${{ inputs.release-name }} ${{ inputs.chart-path }} $HELM_ARGS
+
+    - name: Smoke Test
+      shell: bash
+      run: |
+        echo "Running smoke test against ${{ inputs.health-url }}"
+        for i in $(seq 1 12); do
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${{ inputs.health-url }}" || echo "000")
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "Smoke test passed (HTTP $HTTP_CODE)"
+            exit 0
+          fi
+          echo "Attempt $i: HTTP $HTTP_CODE — retrying in 10s..."
+          sleep 10
+        done
+        echo "Smoke test failed after 12 attempts"
+        exit 1
+
+    - name: Rollback on Failure
+      if: failure()
+      shell: bash
+      run: |
+        echo "Smoke test failed — rolling back..."
+        helm rollback ${{ inputs.release-name }} --namespace ${{ inputs.namespace }} --wait
+        echo "Rollback complete"

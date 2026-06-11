@@ -1,0 +1,106 @@
+replicaCount: 1
+
+image:
+  repository: ""
+  tag: ""
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi
+
+nodeSelector:
+  kubernetes.io/os: windows
+
+tolerations: []
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - eshop-legacy-mvc
+          topologyKey: kubernetes.io/hostname
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  host: eshop-dev.example.com
+  tls: true
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilization: 70
+
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+
+config:
+  useMockData: "false"
+  useCustomizationData: "false"
+  useAzureStorage: "false"
+  storageConnectionString: ""
+  useAzureActiveDirectory: "false"
+  azureActiveDirectoryClientId: ""
+  azureActiveDirectoryTenant: ""
+  postLogoutRedirectUri: ""
+
+externalSecrets:
+  enabled: true
+  secretStoreName: "vault-backend"
+  keys:
+    - name: ConnectionString
+      remoteRef: eshop/db-connection-string
+    - name: SessionStateConnStr
+      remoteRef: eshop/session-state-connection-string
+    - name: AppInsightsKey
+      remoteRef: eshop/appinsights-key
+
+probes:
+  liveness:
+    path: /health
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readiness:
+    path: /health/ready
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  startup:
+    path: /health
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 30

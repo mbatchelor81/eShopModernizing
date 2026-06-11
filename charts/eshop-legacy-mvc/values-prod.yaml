@@ -1,0 +1,22 @@
+replicaCount: 3
+
+resources:
+  requests:
+    cpu: "1"
+    memory: 1Gi
+  limits:
+    cpu: "2"
+    memory: 2Gi
+
+ingress:
+  host: eshop.example.com
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilization: 70
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
