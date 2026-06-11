@@ -1,0 +1,106 @@
+syntax = "proto3";
+
+option csharp_namespace = "eShopGrpcService.Protos";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/empty.proto";
+
+package catalog;
+
+service CatalogService {
+  rpc FindCatalogItem (FindCatalogItemRequest) returns (CatalogItemResponse);
+  rpc GetCatalogBrands (google.protobuf.Empty) returns (CatalogBrandsResponse);
+  rpc GetCatalogItems (GetCatalogItemsRequest) returns (CatalogItemsResponse);
+  rpc GetCatalogTypes (google.protobuf.Empty) returns (CatalogTypesResponse);
+  rpc GetAvailableStock (GetAvailableStockRequest) returns (AvailableStockResponse);
+  rpc CreateAvailableStock (CatalogItemsStockMessage) returns (google.protobuf.Empty);
+  rpc CreateCatalogItem (CatalogItemMessage) returns (google.protobuf.Empty);
+  rpc UpdateCatalogItem (CatalogItemMessage) returns (google.protobuf.Empty);
+  rpc RemoveCatalogItem (CatalogItemMessage) returns (google.protobuf.Empty);
+  rpc GetDiscount (GetDiscountRequest) returns (DiscountItemResponse);
+}
+
+// --- Request messages ---
+
+message FindCatalogItemRequest {
+  int32 id = 1;
+}
+
+message GetCatalogItemsRequest {
+  google.protobuf.Int32Value brand_id_filter = 1;
+  google.protobuf.Int32Value type_id_filter = 2;
+}
+
+message GetAvailableStockRequest {
+  google.protobuf.Timestamp date = 1;
+  int32 catalog_item_id = 2;
+}
+
+message GetDiscountRequest {
+  google.protobuf.Timestamp day = 1;
+}
+
+// --- Response messages ---
+
+message CatalogItemResponse {
+  CatalogItemMessage item = 1;
+}
+
+message CatalogBrandsResponse {
+  repeated CatalogBrandMessage brands = 1;
+}
+
+message CatalogItemsResponse {
+  repeated CatalogItemMessage items = 1;
+}
+
+message CatalogTypesResponse {
+  repeated CatalogTypeMessage types = 1;
+}
+
+message AvailableStockResponse {
+  int32 available_stock = 1;
+}
+
+message DiscountItemResponse {
+  DiscountItemMessage discount = 1;
+}
+
+// --- Entity messages ---
+
+message CatalogItemMessage {
+  int32 id = 1;
+  string description = 2;
+  string name = 3;
+  string price = 4; // decimal as string
+  string picturefilename = 5;
+  int32 catalog_brand_id = 6;
+  int32 catalog_type_id = 7;
+  CatalogTypeMessage catalog_type = 8;
+  CatalogBrandMessage catalog_brand = 9;
+}
+
+message CatalogBrandMessage {
+  int32 id = 1;
+  string brand = 2;
+}
+
+message CatalogTypeMessage {
+  int32 id = 1;
+  string type = 2;
+}
+
+message CatalogItemsStockMessage {
+  google.protobuf.Timestamp date = 1;
+  int32 catalog_item_id = 2;
+  int32 available_stock = 3;
+  int32 stock_id = 4;
+}
+
+message DiscountItemMessage {
+  double size = 1;
+  google.protobuf.Timestamp start = 2;
+  google.protobuf.Timestamp end = 3;
+  int32 id = 4;
+}

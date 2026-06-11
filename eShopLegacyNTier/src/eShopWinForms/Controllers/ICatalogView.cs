@@ -1,4 +1,4 @@
-﻿using eShopWinForms.eShopServiceReference;
+using eShopWinForms.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

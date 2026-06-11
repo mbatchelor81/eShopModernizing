@@ -26,6 +26,18 @@ services:
     depends_on:
       - sql.data      
     
+  eshopgrpcservice:
+    image: eshop/grpcservice:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: eShopGrpcService/Dockerfile
+    ports:
+      - "5001:5001"
+    environment:
+      - ConnectionString=Server=sql.data;Database=eShopDatabase;User Id=sa;Password=${SA_PASSWORD:-Pass@word};TrustServerCertificate=True
+    depends_on:
+      - sql.data
+
   sql.data:
     image: microsoft/mssql-server-windows-developer
 
