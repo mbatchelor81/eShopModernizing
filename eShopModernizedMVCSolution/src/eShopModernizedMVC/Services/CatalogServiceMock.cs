@@ -65,6 +65,15 @@ namespace eShopModernizedMVC.Services
             catalogItems.Remove(catalogItem);
         }
 
+        public IEnumerable<CatalogItem> SearchCatalogItems(string searchTerm)
+        {
+            var items = ComposeCatalogItems(catalogItems);
+            return items
+                .Where(c => c.Name.IndexOf(searchTerm, System.StringComparison.OrdinalIgnoreCase) >= 0)
+                .OrderBy(c => c.Id)
+                .ToList();
+        }
+
         public void Dispose()
         {
         }

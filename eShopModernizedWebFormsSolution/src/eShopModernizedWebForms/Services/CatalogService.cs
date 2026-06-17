@@ -66,6 +66,16 @@ namespace eShopModernizedWebForms.Services
             db.SaveChanges();
         }
 
+        public IEnumerable<CatalogItem> SearchCatalogItems(string searchTerm)
+        {
+            return db.CatalogItems
+                .Include(c => c.CatalogBrand)
+                .Include(c => c.CatalogType)
+                .Where(c => c.Name.Contains(searchTerm))
+                .OrderBy(c => c.Id)
+                .ToList();
+        }
+
         public void Dispose()
         {
             db.Dispose();

@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using eShopPorted.Models;
@@ -138,6 +140,41 @@ public ActionResult Create([Bind("Id,Name,Description,Price,PictureFileName,Cata
             CatalogItem catalogItem = service.FindCatalogItem(id);
             service.RemoveCatalogItem(catalogItem);
             return RedirectToAction("Index");
+        }
+
+        private static readonly Regex SqlMetaCharPattern = new Regex(@"[;'\""]|--|/\*|\*/", RegexOptions.Compiled);
+        private const int MaxSearchTermLength = 200;
+
+        // GET: Catalog/Search?q=term
+        public ActionResult Search(string q)
+        {
+            _log.Info($"Now loading... /Catalog/Search?q={q}");
+
+            if (string.IsNullOrWhiteSpace(q))
+            {
+                return RedirectToAction("Index");
+            }
+
+            if (q.Length > MaxSearchTermLength)
+            {
+                ModelState.AddModelError("q", $"Search term must not exceed {MaxSearchTermLength} characters.");
+                var paginatedItems = service.GetCatalogItemsPaginated(10, 0);
+                ChangeUriPlaceholder(paginatedItems.Data);
+                return View("Index", paginatedItems);
+            }
+
+            if (SqlMetaCharPattern.IsMatch(q))
+            {
+                ModelState.AddModelError("q", "Search term contains invalid characters.");
+                var paginatedItems = service.GetCatalogItemsPaginated(10, 0);
+                ChangeUriPlaceholder(paginatedItems.Data);
+                return View("Index", paginatedItems);
+            }
+
+            var results = service.SearchCatalogItems(q).ToList();
+            ChangeUriPlaceholder(results);
+            ViewBag.SearchTerm = q;
+            return View("SearchResults", results);
         }
 
         protected override void Dispose(bool disposing)

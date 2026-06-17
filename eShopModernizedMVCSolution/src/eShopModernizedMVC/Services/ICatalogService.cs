@@ -14,5 +14,6 @@ namespace eShopModernizedMVC.Services
         void CreateCatalogItem(CatalogItem catalogItem);
         void UpdateCatalogItem(CatalogItem catalogItem);
         void RemoveCatalogItem(CatalogItem catalogItem);
+        IEnumerable<CatalogItem> SearchCatalogItems(string searchTerm);
     }
 }

@@ -1,0 +1,21 @@
+@model IEnumerable<eShopPorted.Models.CatalogItem>
+
+@{
+    ViewBag.Title = "Search Results";
+}
+
+<div class="esh-table">
+    <h2>Search Results for "@ViewBag.SearchTerm"</h2>
+    <p class="esh-link-wrapper">
+        @Html.ActionLink("Back to Catalog", "Index", null, new { @class = "btn esh-button esh-button-primary" })
+    </p>
+
+    @if (!Model.Any())
+    {
+        <p>No items found matching your search.</p>
+    }
+    else
+    {
+        @Html.Partial("CatalogTable", Model)
+    }
+</div>
