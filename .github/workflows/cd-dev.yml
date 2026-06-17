@@ -1,0 +1,145 @@
+name: CD - Dev
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: cd-dev
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ENVIRONMENT: dev
+  REGISTRY: ${{ vars.ACR_LOGIN_SERVER }}
+  IMAGE_NAME: eshop/legacymvc
+  CHART_PATH: charts/eshop-legacy-mvc
+
+jobs:
+  build-push:
+    name: Build & Push Image
+    runs-on: windows-latest
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set image tag
+        id: meta
+        shell: bash
+        run: |
+          SHORT_SHA=$(echo "${GH_SHA}" | cut -c1-7)
+          echo "tag=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+        env:
+          GH_SHA: ${{ github.sha }}
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Login to ACR
+        shell: bash
+        run: az acr login --name $(echo "${{ env.REGISTRY }}" | cut -d. -f1)
+
+      - name: Build and push
+        shell: bash
+        run: |
+          docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.tag }} \
+            -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
+            -f eShopLegacyMVCSolution/src/eShopLegacyMVC/Dockerfile \
+            eShopLegacyMVCSolution/src/eShopLegacyMVC/
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.tag }}
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+  terraform:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    needs: build-push
+    environment: dev
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.5"
+
+      - name: Terraform Init
+        working-directory: infra
+        run: terraform init -backend-config="environments/backend-${{ env.ENVIRONMENT }}.conf"
+
+      - name: Terraform Apply
+        working-directory: infra
+        run: terraform apply -auto-approve -var-file="environments/${{ env.ENVIRONMENT }}.tfvars"
+
+  deploy:
+    name: Helm Deploy
+    runs-on: ubuntu-latest
+    needs: [build-push, terraform]
+    environment: dev
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Get AKS credentials
+        uses: azure/aks-set-context@v4
+        with:
+          resource-group: rg-eshop-${{ env.ENVIRONMENT }}
+          cluster-name: aks-eshop-${{ env.ENVIRONMENT }}
+
+      - name: Helm Deploy
+        uses: ./.github/actions/helm-deploy
+        with:
+          release-name: eshop-mvc
+          chart-path: ${{ env.CHART_PATH }}
+          namespace: eshop-${{ env.ENVIRONMENT }}
+          values-file: ${{ env.CHART_PATH }}/values-dev.yaml
+          image-repository: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          image-tag: ${{ needs.build-push.outputs.image_tag }}
+
+      - name: Smoke Test
+        run: |
+          ENDPOINT=$(kubectl get ingress -n eshop-${{ env.ENVIRONMENT }} eshop-mvc-eshop-legacy-mvc -o jsonpath='{.spec.rules[0].host}')
+          for i in 1 2 3 4 5; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://${ENDPOINT}/health" || true)
+            if [ "$STATUS" = "200" ]; then
+              echo "Smoke test passed"
+              exit 0
+            fi
+            echo "Attempt $i: status=$STATUS, retrying in 30s..."
+            sleep 30
+          done
+          echo "Smoke test failed — rolling back"
+          HISTORY_LEN=$(helm history eshop-mvc -n eshop-${{ env.ENVIRONMENT }} --max 2 -o json | jq 'length') || true
+          if [ -z "$HISTORY_LEN" ]; then
+            echo "ERROR: Could not determine helm history. Attempting rollback as a safe default."
+            helm rollback eshop-mvc -n eshop-${{ env.ENVIRONMENT }} || echo "Rollback failed — manual intervention required."
+          elif [ "$HISTORY_LEN" -gt 1 ]; then
+            helm rollback eshop-mvc -n eshop-${{ env.ENVIRONMENT }}
+          else
+            echo "WARNING: First deployment — no previous revision. Uninstalling release."
+            helm uninstall eshop-mvc -n eshop-${{ env.ENVIRONMENT }}
+          fi
+          exit 1

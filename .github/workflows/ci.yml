@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install .NET Framework targeting packs
+        shell: pwsh
+        run: |
+          choco install netfx-4.6.1-devpack -y --no-progress
+          choco install netfx-4.7.2-devpack -y --no-progress
+
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v2
+        with:
+          nuget-version: latest
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ hashFiles('**/*.sln', '**/packages.config') }}
+          restore-keys: nuget-
+
+      - name: NuGet Restore
+        run: nuget restore eShopLegacyMVCSolution/eShopLegacyMVC.sln
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build
+        run: msbuild eShopLegacyMVCSolution/eShopLegacyMVC.sln /t:Build /p:Configuration=Release
+
+      - name: Run Tests
+        if: false  # Enable once test projects are added
+        run: dotnet test --configuration Release --no-build
+
+  docker:
+    name: Docker Build & Scan
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Docker Build
+        run: |
+          docker build -t eshop/legacymvc:${{ github.sha }} `
+            -f eShopLegacyMVCSolution/src/eShopLegacyMVC/Dockerfile `
+            eShopLegacyMVCSolution/src/eShopLegacyMVC/
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: eshop/legacymvc:${{ github.sha }}
+          format: sarif
+          output: trivy-results.sarif
+          severity: CRITICAL,HIGH
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
+
+  secret-scan:
+    name: Secret Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  sbom:
+    name: Generate SBOM
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate SBOM with Syft
+        uses: anchore/sbom-action@v0
+        with:
+          artifact-name: sbom-eshop-legacy-mvc.spdx.json
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: "*.spdx.json"
+          retention-days: 90

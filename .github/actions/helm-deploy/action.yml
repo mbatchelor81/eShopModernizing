@@ -1,0 +1,60 @@
+name: Helm Deploy
+description: Reusable composite action for Helm upgrade/install with rollback support
+
+inputs:
+  release-name:
+    description: Helm release name
+    required: true
+  chart-path:
+    description: Path to the Helm chart
+    required: true
+  namespace:
+    description: Kubernetes namespace
+    required: true
+  values-file:
+    description: Path to the values file
+    required: true
+  image-repository:
+    description: Container image repository
+    required: true
+  image-tag:
+    description: Container image tag
+    required: true
+  timeout:
+    description: Helm upgrade timeout
+    required: false
+    default: "10m"
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Helm
+      uses: azure/setup-helm@v4
+      with:
+        version: v3.14.0
+
+    - name: Create namespace
+      shell: bash
+      env:
+        NAMESPACE: ${{ inputs.namespace }}
+      run: kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
+
+    - name: Helm Upgrade
+      shell: bash
+      env:
+        RELEASE_NAME: ${{ inputs.release-name }}
+        CHART_PATH: ${{ inputs.chart-path }}
+        NAMESPACE: ${{ inputs.namespace }}
+        VALUES_FILE: ${{ inputs.values-file }}
+        IMAGE_REPO: ${{ inputs.image-repository }}
+        IMAGE_TAG: ${{ inputs.image-tag }}
+        TIMEOUT: ${{ inputs.timeout }}
+      run: |
+        helm upgrade --install "${RELEASE_NAME}" "${CHART_PATH}" \
+          --namespace "${NAMESPACE}" \
+          --values "${VALUES_FILE}" \
+          --set-string "image.repository=${IMAGE_REPO}" \
+          --set-string "image.tag=${IMAGE_TAG}" \
+          --timeout "${TIMEOUT}" \
+          --wait \
+          --atomic
