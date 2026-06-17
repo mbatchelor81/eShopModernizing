@@ -7,6 +7,7 @@ using eShopModernizedWebForms.Services;
 using log4net;
 using Microsoft.ApplicationInsights.Extensibility;
 using System;
+using System.Text.Json;
 using System.Data.Entity;
 using System.Diagnostics;
 using System.Web;
@@ -18,6 +19,11 @@ namespace eShopModernizedWebForms
     public class Global : HttpApplication, IContainerProviderAccessor
     {
         private static readonly ILog _log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+        internal static readonly JsonSerializerOptions DefaultJsonOptions = new JsonSerializerOptions
+        {
+            MaxDepth = 64
+        };
 
         static IContainerProvider _containerProvider;
         IContainer container;
