@@ -21,7 +21,7 @@
     <!-- Pass environment variables to your container: -->
 
     <EnvironmentVariables>
-      <EnvironmentVariable Name="SA_PASSWORD" Value="Pass@word"/>
+      <EnvironmentVariable Name="SA_PASSWORD" Value="[OverriddenInApplicationManifest]"/>
       <EnvironmentVariable Name="ACCEPT_EULA" Value="Y"/>
     </EnvironmentVariables>
 

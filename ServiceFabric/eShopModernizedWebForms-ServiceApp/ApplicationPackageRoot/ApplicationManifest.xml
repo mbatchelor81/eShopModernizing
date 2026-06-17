@@ -13,6 +13,7 @@
     <Parameter Name="AzureActiveDirectoryClientId" DefaultValue="" />
     <Parameter Name="AzureActiveDirectoryTenant" DefaultValue="" />
     <Parameter Name="PostLogoutRedirectUri" DefaultValue="" />
+    <Parameter Name="ConnectionString" DefaultValue="" />
   </Parameters>
   <!-- Import the ServiceManifest from the ServicePackage. The ServiceManifestName and ServiceManifestVersion 
        should match the Name and Version attributes of the ServiceManifest element defined in the 
@@ -29,6 +30,7 @@
       <EnvironmentVariable Name="AzureActiveDirectoryClientId" Value="[AzureActiveDirectoryClientId]"/>
       <EnvironmentVariable Name="AzureActiveDirectoryTenant" Value="[AzureActiveDirectoryTenant]"/>
       <EnvironmentVariable Name="PostLogoutRedirectUri" Value="[PostLogoutRedirectUri]"/>
+      <EnvironmentVariable Name="ConnectionString" Value="[ConnectionString]"/>
     </EnvironmentOverrides>
     <Policies>
       <ContainerHostPolicies CodePackageRef="Code">

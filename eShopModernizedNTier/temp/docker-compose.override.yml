@@ -3,17 +3,17 @@ version: '3'
 services:
   eshopwcfservice:
     environment:
-      - ConnectionString=Server=sql.data;Database=eShopDatabase;User Id=sa;Password=Pass@word
+      - ConnectionString=Server=sql.data;Database=eShopDatabase;User Id=${DB_USER};Password=${DB_PASSWORD}
     ports:
      - "5113:80"
   sql.data:
     environment:
-      - SA_PASSWORD=Pass@word
+      - SA_PASSWORD=${DB_PASSWORD}
       - ACCEPT_EULA=Y
     ports:
       - "5433:1433"
     healthcheck:
-      test: [ "CMD", "sqlcmd", "-U", "sa", "-P", "Pass@word", "-Q", "select 1" ]
+      test: [ "CMD", "sqlcmd", "-U", "sa", "-P", "${DB_PASSWORD}", "-Q", "select 1" ]
       interval: 1s
 networks:
   default:

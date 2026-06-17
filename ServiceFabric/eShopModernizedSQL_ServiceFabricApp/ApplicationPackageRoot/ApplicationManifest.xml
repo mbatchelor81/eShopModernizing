@@ -6,6 +6,7 @@
                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <Parameters>
     <Parameter Name="SQL_Container_InstanceCount" DefaultValue="1" />
+    <Parameter Name="SA_PASSWORD" DefaultValue="" />
   </Parameters>
   <!-- Import the ServiceManifest from the ServicePackage. The ServiceManifestName and ServiceManifestVersion 
        should match the Name and Version attributes of the ServiceManifest element defined in the 
@@ -14,6 +15,9 @@
   <ServiceManifestImport>
     <ServiceManifestRef ServiceManifestName="SQL_ContainerPkg" ServiceManifestVersion="1.0.0" />
     <ConfigOverrides />
+    <EnvironmentOverrides CodePackageRef="Code">
+      <EnvironmentVariable Name="SA_PASSWORD" Value="[SA_PASSWORD]"/>
+    </EnvironmentOverrides>
     <Policies>
       <ContainerHostPolicies CodePackageRef="Code">
         <PortBinding ContainerPort="1433" EndpointRef="SqlData_ContainerTypeEndpoint"/>

@@ -9,5 +9,6 @@
     <Parameter Name="AzureActiveDirectoryClientId" Value="#{your_aad_client_id}#" />
     <Parameter Name="AzureActiveDirectoryTenant" Value="#{your_aad_directory_tenant}#" />
     <Parameter Name="PostLogoutRedirectUri" Value="#{your_aad_logout_refirect_uri}#" />
+    <Parameter Name="ConnectionString" Value="#{your_catalog_connection_string}#" />
   </Parameters>
 </Application>

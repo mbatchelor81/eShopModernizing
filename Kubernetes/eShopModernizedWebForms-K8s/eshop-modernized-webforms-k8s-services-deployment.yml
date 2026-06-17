@@ -26,7 +26,10 @@ spec:
         - name: UseCustomizationData
           value: "False"
         - name: ConnectionString
-          value: "Server=sql-data;Database=Microsoft.eShopOnContainers.Services.CatalogDb;User Id=sa;Password=Pass@word"
+          valueFrom:
+            secretKeyRef:
+              name: eshop-db-secrets
+              key: catalog-connection-string
         - name: UseAzureStorage
           value: "False"
         - name: StorageConnectionString
