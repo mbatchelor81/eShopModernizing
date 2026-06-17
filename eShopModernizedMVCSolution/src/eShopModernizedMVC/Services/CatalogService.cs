@@ -33,6 +33,31 @@ namespace eShopModernizedMVC.Services
                 pageIndex, pageSize, totalItems, itemsOnPage);
         }
 
+        public PaginatedItemsViewModel<CatalogItem> SearchCatalogItems(string searchTerm, int pageSize, int pageIndex)
+        {
+            var sanitized = SearchInputValidator.Sanitize(searchTerm);
+            if (string.IsNullOrEmpty(sanitized))
+            {
+                return GetCatalogItemsPaginated(pageSize, pageIndex);
+            }
+
+            var query = db.CatalogItems
+                .Include(c => c.CatalogBrand)
+                .Include(c => c.CatalogType)
+                .Where(c => c.Name.Contains(sanitized));
+
+            var totalItems = query.LongCount();
+
+            var itemsOnPage = query
+                .OrderBy(c => c.Id)
+                .Skip(pageSize * pageIndex)
+                .Take(pageSize)
+                .ToList();
+
+            return new PaginatedItemsViewModel<CatalogItem>(
+                pageIndex, pageSize, totalItems, itemsOnPage);
+        }
+
         public CatalogItem FindCatalogItem(int id)
         {
             return db.CatalogItems.Include(c => c.CatalogBrand).Include(c => c.CatalogType).FirstOrDefault(ci => ci.Id == id);

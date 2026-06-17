@@ -10,6 +10,7 @@ namespace eShopModernizedWebForms.Services
         CatalogItem FindCatalogItem(int id);
         IEnumerable<CatalogBrand> GetCatalogBrands();
         PaginatedItemsViewModel<CatalogItem> GetCatalogItemsPaginated(int pageSize, int pageIndex);
+        PaginatedItemsViewModel<CatalogItem> SearchCatalogItems(string searchTerm, int pageSize, int pageIndex);
         IEnumerable<CatalogType> GetCatalogTypes();
         void CreateCatalogItem(CatalogItem catalogItem);
         void UpdateCatalogItem(CatalogItem catalogItem);
