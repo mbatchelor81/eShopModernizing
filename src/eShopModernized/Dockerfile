@@ -1,0 +1,22 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+COPY Directory.Build.props .
+COPY eShop.Shared.Core/eShop.Shared.Core.csproj eShop.Shared.Core/
+COPY eShop.Catalog.Core/eShop.Catalog.Core.csproj eShop.Catalog.Core/
+COPY eShop.Catalog.Api/eShop.Catalog.Api.csproj eShop.Catalog.Api/
+COPY eShop.Catalog.Web/eShop.Catalog.Web.csproj eShop.Catalog.Web/
+COPY eShop.Catalog.Client/eShop.Catalog.Client.csproj eShop.Catalog.Client/
+COPY eShop.Catalog.Tests/eShop.Catalog.Tests.csproj eShop.Catalog.Tests/
+COPY eShopModernized.sln .
+RUN dotnet restore
+
+COPY . .
+RUN dotnet publish eShop.Catalog.Api/eShop.Catalog.Api.csproj -c Release -o /app/publish --no-restore
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+EXPOSE 5000 5001
+
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "eShop.Catalog.Api.dll"]

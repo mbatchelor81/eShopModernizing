@@ -1,0 +1,83 @@
+@model CatalogItem
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h2>Edit</h2>
+
+<form asp-action="Edit" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input type="hidden" asp-for="Id" />
+
+    <div class="container">
+        <div class="row">
+            @if (!string.IsNullOrEmpty(Model.PictureUri))
+            {
+                <div class="col-md-6">
+                    <img src="@Model.PictureUri" alt="@Model.Name" class="img-fluid" />
+                </div>
+            }
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label"></label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label"></label>
+                    <input asp-for="Description" class="form-control" />
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="CatalogBrandId" class="form-label"></label>
+                    <select asp-for="CatalogBrandId" asp-items="@(ViewBag.CatalogBrandId as SelectList)" class="form-select"></select>
+                    <span asp-validation-for="CatalogBrandId" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="CatalogTypeId" class="form-label"></label>
+                    <select asp-for="CatalogTypeId" asp-items="@(ViewBag.CatalogTypeId as SelectList)" class="form-select"></select>
+                    <span asp-validation-for="CatalogTypeId" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Price" class="form-label"></label>
+                    <input asp-for="Price" class="form-control" />
+                    <span asp-validation-for="Price" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="PictureFileName" class="form-label"></label>
+                    <input asp-for="PictureFileName" class="form-control" readonly title="Not allowed for edition" />
+                    <span asp-validation-for="PictureFileName" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="AvailableStock" class="form-label"></label>
+                    <input asp-for="AvailableStock" class="form-control" />
+                    <span asp-validation-for="AvailableStock" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="RestockThreshold" class="form-label"></label>
+                    <input asp-for="RestockThreshold" class="form-control" />
+                    <span asp-validation-for="RestockThreshold" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="MaxStockThreshold" class="form-label"></label>
+                    <input asp-for="MaxStockThreshold" class="form-control" />
+                    <span asp-validation-for="MaxStockThreshold" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3 text-end">
+                    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                    <input type="submit" value="Save" class="btn btn-primary" />
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
