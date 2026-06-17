@@ -10,6 +10,8 @@ namespace eShopModernizedMVC
     {
         public void Configuration(IAppBuilder app)
         {
+            app.Use<SecurityHeadersMiddleware>();
+
             if (CatalogConfiguration.UseAzureActiveDirectory)
             {
                 ConfigureAuth(app);
