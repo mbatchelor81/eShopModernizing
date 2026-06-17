@@ -1,0 +1,89 @@
+@model CatalogItem
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h2>Create</h2>
+
+<form asp-action="Create" method="post" class="form-horizontal">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3 row">
+        <label asp-for="Name" class="col-md-2 col-form-label"></label>
+        <div class="col-md-4">
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="mb-3 row">
+        <label asp-for="Description" class="col-md-2 col-form-label"></label>
+        <div class="col-md-4">
+            <input asp-for="Description" class="form-control" />
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="mb-3 row">
+        <label asp-for="CatalogBrandId" class="col-md-2 col-form-label"></label>
+        <div class="col-md-4">
+            <select asp-for="CatalogBrandId" asp-items="@(ViewBag.CatalogBrandId as SelectList)" class="form-select"></select>
+            <span asp-validation-for="CatalogBrandId" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="mb-3 row">
+        <label asp-for="CatalogTypeId" class="col-md-2 col-form-label"></label>
+        <div class="col-md-4">
+            <select asp-for="CatalogTypeId" asp-items="@(ViewBag.CatalogTypeId as SelectList)" class="form-select"></select>
+            <span asp-validation-for="CatalogTypeId" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="mb-3 row">
+        <label asp-for="Price" class="col-md-2 col-form-label"></label>
+        <div class="col-md-4">
+            <input asp-for="Price" class="form-control" />
+            <span asp-validation-for="Price" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="mb-3 row">
+        <label class="col-md-2 col-form-label">Picture</label>
+        <div class="col-md-4">
+            <span class="form-text">Uploading images not allowed for this version.</span>
+        </div>
+    </div>
+
+    <div class="mb-3 row">
+        <label asp-for="AvailableStock" class="col-md-2 col-form-label"></label>
+        <div class="col-md-4">
+            <input asp-for="AvailableStock" class="form-control" />
+            <span asp-validation-for="AvailableStock" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="mb-3 row">
+        <label asp-for="RestockThreshold" class="col-md-2 col-form-label"></label>
+        <div class="col-md-4">
+            <input asp-for="RestockThreshold" class="form-control" />
+            <span asp-validation-for="RestockThreshold" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="mb-3 row">
+        <label asp-for="MaxStockThreshold" class="col-md-2 col-form-label"></label>
+        <div class="col-md-4">
+            <input asp-for="MaxStockThreshold" class="form-control" />
+            <span asp-validation-for="MaxStockThreshold" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="mb-3 row">
+        <div class="col-md-4 offset-md-2 text-end">
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            <input type="submit" value="Create" class="btn btn-primary" />
+        </div>
+    </div>
+</form>

@@ -1,0 +1,45 @@
+@model PaginatedItemsViewModel
+
+@{
+    ViewData["Title"] = "Catalog";
+}
+
+<div class="esh-table">
+    <p>
+        <a asp-action="Create" class="btn btn-primary">Create New</a>
+    </p>
+
+    <partial name="_CatalogTable" model="Model.Data" />
+
+    <nav class="mt-3">
+        <div class="d-flex justify-content-between align-items-center">
+            @if (Model.ActualPage > 0)
+            {
+                <a asp-action="Index"
+                   asp-route-pageSize="@Model.ItemsPerPage"
+                   asp-route-pageIndex="@(Model.ActualPage - 1)"
+                   class="btn btn-outline-secondary">Previous</a>
+            }
+            else
+            {
+                <span class="btn btn-outline-secondary disabled">Previous</span>
+            }
+
+            <span>
+                Showing @Model.ItemsPerPage of @Model.TotalCount products - Page @(Model.ActualPage + 1) / @Model.TotalPages
+            </span>
+
+            @if (Model.ActualPage < Model.TotalPages - 1)
+            {
+                <a asp-action="Index"
+                   asp-route-pageSize="@Model.ItemsPerPage"
+                   asp-route-pageIndex="@(Model.ActualPage + 1)"
+                   class="btn btn-outline-secondary">Next</a>
+            }
+            else
+            {
+                <span class="btn btn-outline-secondary disabled">Next</span>
+            }
+        </div>
+    </nav>
+</div>

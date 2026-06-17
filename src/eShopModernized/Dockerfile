@@ -1,0 +1,42 @@
+# =============================================================================
+# Dockerfile — Default build (Catalog API)
+# For service-specific images, use Dockerfile.api or Dockerfile.web
+# =============================================================================
+
+# Stage 1: Build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+COPY Directory.Build.props .
+COPY eShopModernized.sln .
+COPY eShop.Shared.Core/eShop.Shared.Core.csproj eShop.Shared.Core/
+COPY eShop.Catalog.Core/eShop.Catalog.Core.csproj eShop.Catalog.Core/
+COPY eShop.Catalog.Api/eShop.Catalog.Api.csproj eShop.Catalog.Api/
+COPY eShop.Catalog.Web/eShop.Catalog.Web.csproj eShop.Catalog.Web/
+COPY eShop.Catalog.Client/eShop.Catalog.Client.csproj eShop.Catalog.Client/
+COPY eShop.Catalog.Tests/eShop.Catalog.Tests.csproj eShop.Catalog.Tests/
+
+RUN dotnet restore
+
+COPY . .
+RUN dotnet publish eShop.Catalog.Api/eShop.Catalog.Api.csproj \
+    -c Release -o /app/publish
+
+# Stage 2: Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV ASPNETCORE_ENVIRONMENT=Production
+ENV Kestrel__HttpPort=8080
+ENV Kestrel__GrpcPort=8081
+EXPOSE 8080 8081
+
+COPY --from=build /app/publish .
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+ENTRYPOINT ["dotnet", "eShop.Catalog.Api.dll"]

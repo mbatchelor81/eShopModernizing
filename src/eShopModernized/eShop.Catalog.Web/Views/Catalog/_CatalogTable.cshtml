@@ -1,0 +1,46 @@
+@model IEnumerable<CatalogItem>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th></th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Brand</th>
+            <th>Type</th>
+            <th>Price</th>
+            <th>Picture</th>
+            <th>Stock</th>
+            <th>Restock</th>
+            <th>Max Stock</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.PictureUri))
+                    {
+                        <img src="@item.PictureUri" alt="@item.Name" style="max-width:50px;" />
+                    }
+                </td>
+                <td>@item.Name</td>
+                <td>@item.Description</td>
+                <td>@item.CatalogBrand?.Brand</td>
+                <td>@item.CatalogType?.Type</td>
+                <td class="text-end">@item.Price.ToString("C")</td>
+                <td>@item.PictureFileName</td>
+                <td>@item.AvailableStock</td>
+                <td>@item.RestockThreshold</td>
+                <td>@item.MaxStockThreshold</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info">Details</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
