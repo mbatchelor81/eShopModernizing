@@ -1,7 +1,8 @@
-﻿using eShopWinForms.Controllers;
-using eShopWinForms.eShopServiceReference;
+using eShopWinForms.Controllers;
+using eShopWinForms.Services;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -20,12 +21,13 @@ namespace eShopWinForms
             Application.SetCompatibleTextRenderingDefault(false);
 
             CatalogView catalogView = new CatalogView();
-            ICatalogService service = new eShopServiceReference.CatalogServiceClient();
+            var grpcAddress = ConfigurationManager.AppSettings["GrpcServiceAddress"] ?? "localhost";
+            var grpcPort = int.TryParse(ConfigurationManager.AppSettings["GrpcServicePort"], out var p) ? p : 5001;
+            GrpcCatalogService service = new GrpcCatalogService(grpcAddress, grpcPort);
             CatalogController catalogController = new CatalogController(service, catalogView);
 
             catalogController.LoadView();
             catalogView.ShowDialog();
         }
-
     }
 }

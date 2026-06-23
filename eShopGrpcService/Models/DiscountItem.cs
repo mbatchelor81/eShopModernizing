@@ -1,0 +1,20 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace eShopGrpcService.Models;
+
+public class DiscountItem
+{
+    public DiscountItem() { }
+
+    public double Size { get; set; }
+
+    [Column(TypeName = "date")]
+    public DateTime Start { get; set; }
+
+    [Column(TypeName = "date")]
+    public DateTime End { get; set; }
+
+    [Key]
+    public int Id { get; set; }
+}
