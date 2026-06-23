@@ -5,7 +5,6 @@ namespace eShopGrpcService.Mapping;
 
 public static class CatalogMappingExtensions
 {
-    // CatalogItem <-> CatalogItemMsg
     public static CatalogItemMsg ToProto(this CatalogItem entity)
     {
         var msg = new CatalogItemMsg
@@ -39,45 +38,26 @@ public static class CatalogMappingExtensions
         };
     }
 
-    // CatalogBrand <-> CatalogBrandMsg
     public static CatalogBrandMsg ToProto(this CatalogBrand entity)
     {
-        return new CatalogBrandMsg
-        {
-            Id = entity.Id,
-            Brand = entity.Brand ?? ""
-        };
+        return new CatalogBrandMsg { Id = entity.Id, Brand = entity.Brand ?? "" };
     }
 
     public static CatalogBrand ToEntity(this CatalogBrandMsg msg)
     {
-        return new CatalogBrand
-        {
-            Id = msg.Id,
-            Brand = msg.Brand
-        };
+        return new CatalogBrand { Id = msg.Id, Brand = msg.Brand };
     }
 
-    // CatalogType <-> CatalogTypeMsg
     public static CatalogTypeMsg ToProto(this CatalogType entity)
     {
-        return new CatalogTypeMsg
-        {
-            Id = entity.Id,
-            Type = entity.Type ?? ""
-        };
+        return new CatalogTypeMsg { Id = entity.Id, Type = entity.Type ?? "" };
     }
 
     public static CatalogType ToEntity(this CatalogTypeMsg msg)
     {
-        return new CatalogType
-        {
-            Id = msg.Id,
-            Type = msg.Type
-        };
+        return new CatalogType { Id = msg.Id, Type = msg.Type };
     }
 
-    // CatalogItemsStock <-> CatalogItemsStockMsg (DateTime <-> Timestamp)
     public static CatalogItemsStockMsg ToProto(this CatalogItemsStock entity)
     {
         return new CatalogItemsStockMsg
@@ -100,7 +80,6 @@ public static class CatalogMappingExtensions
         };
     }
 
-    // DiscountItem <-> DiscountItemMsg (DateTime <-> Timestamp)
     public static DiscountItemMsg ToProto(this DiscountItem entity)
     {
         return new DiscountItemMsg
