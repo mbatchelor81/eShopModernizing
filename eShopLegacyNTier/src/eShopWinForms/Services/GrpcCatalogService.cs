@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Grpc.Core;
 using Google.Protobuf.WellKnownTypes;
@@ -49,7 +50,7 @@ namespace eShopWinForms.Services
         public List<CatalogTypeDto> GetCatalogTypes()
         {
             var response = _client.GetCatalogTypes(new Empty());
-            return response.Types.Select(t => new CatalogTypeDto
+            return response.Types_.Select(t => new CatalogTypeDto
             {
                 Id = t.Id,
                 Type = t.Type
@@ -138,7 +139,7 @@ namespace eShopWinForms.Services
                 Id = msg.Id,
                 Description = msg.Description,
                 Name = msg.Name,
-                Price = decimal.TryParse(msg.Price, out var p) ? p : 0,
+                Price = decimal.TryParse(msg.Price, NumberStyles.Any, CultureInfo.InvariantCulture, out var p) ? p : 0,
                 Picturefilename = msg.Picturefilename,
                 CatalogBrandId = msg.CatalogBrandId,
                 CatalogTypeId = msg.CatalogTypeId,
@@ -154,7 +155,7 @@ namespace eShopWinForms.Services
                 Id = dto.Id,
                 Description = dto.Description ?? "",
                 Name = dto.Name ?? "",
-                Price = dto.Price.ToString(),
+                Price = dto.Price.ToString(CultureInfo.InvariantCulture),
                 Picturefilename = dto.Picturefilename ?? "",
                 CatalogBrandId = dto.CatalogBrandId,
                 CatalogTypeId = dto.CatalogTypeId

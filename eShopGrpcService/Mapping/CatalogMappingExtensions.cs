@@ -1,3 +1,4 @@
+using System.Globalization;
 using Google.Protobuf.WellKnownTypes;
 using eShopGrpcService.Models;
 
@@ -12,7 +13,7 @@ public static class CatalogMappingExtensions
             Id = entity.Id,
             Description = entity.Description ?? "",
             Name = entity.Name ?? "",
-            Price = entity.Price.ToString(),
+            Price = entity.Price.ToString(CultureInfo.InvariantCulture),
             Picturefilename = entity.Picturefilename ?? "",
             CatalogBrandId = entity.CatalogBrandId,
             CatalogTypeId = entity.CatalogTypeId
@@ -31,7 +32,7 @@ public static class CatalogMappingExtensions
             Id = msg.Id,
             Description = msg.Description,
             Name = msg.Name,
-            Price = decimal.TryParse(msg.Price, out var p) ? p : 0,
+            Price = decimal.TryParse(msg.Price, NumberStyles.Any, CultureInfo.InvariantCulture, out var p) ? p : 0,
             Picturefilename = msg.Picturefilename,
             CatalogBrandId = msg.CatalogBrandId,
             CatalogTypeId = msg.CatalogTypeId
