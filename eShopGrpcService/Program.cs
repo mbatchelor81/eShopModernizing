@@ -1,11 +1,14 @@
+using Microsoft.EntityFrameworkCore;
+using eShopGrpcService.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add gRPC services
 builder.Services.AddGrpc();
+builder.Services.AddDbContext<CatalogDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("CatalogDb")));
 
 var app = builder.Build();
 
-// gRPC service endpoints will be mapped here in T8
 app.MapGet("/", () => "eShop gRPC Service is running.");
 
 app.Run();
