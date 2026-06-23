@@ -40,3 +40,6 @@ app.MapHealthChecks("/health");
 app.MapGet("/", () => "eShop gRPC Catalog Service. Use a gRPC client to communicate.");
 
 app.Run();
+
+// Make the implicit Program class public for WebApplicationFactory
+public partial class Program { }

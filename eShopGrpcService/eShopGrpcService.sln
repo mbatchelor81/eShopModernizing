@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "eShopGrpcService", "eShopGrpcService.csproj", "{B98C9C05-143E-4710-9E59-A617AA6ACADF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "eShopGrpcService.Tests", "..\eShopGrpcService.Tests\eShopGrpcService.Tests.csproj", "{C8B8F001-355F-4C14-9513-86DA830DB157}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{B98C9C05-143E-4710-9E59-A617AA6ACADF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B98C9C05-143E-4710-9E59-A617AA6ACADF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B98C9C05-143E-4710-9E59-A617AA6ACADF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8B8F001-355F-4C14-9513-86DA830DB157}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8B8F001-355F-4C14-9513-86DA830DB157}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8B8F001-355F-4C14-9513-86DA830DB157}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8B8F001-355F-4C14-9513-86DA830DB157}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
