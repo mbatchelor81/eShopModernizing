@@ -74,7 +74,6 @@
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -86,11 +85,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Connected Services\eShopServiceReference\Reference.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Compile>
+    <Compile Include="Services\GrpcCatalogService.cs" />
     <Compile Include="Controllers\CatalogController.cs" />
     <Compile Include="Controllers\ICatalogView.cs" />
     <Compile Include="Program.cs" />
@@ -119,31 +114,6 @@
     <None Include="Assets\Fonts\segoeui.ttf" />
     <None Include="Assets\Fonts\segoeuib.ttf" />
     <None Include="Assets\Fonts\segoeuil.ttf" />
-    <None Include="Connected Services\eShopServiceReference\CatalogService.wsdl" />
-    <None Include="Connected Services\eShopServiceReference\CatalogService.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Connected Services\eShopServiceReference\CatalogService1.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Connected Services\eShopServiceReference\CatalogService2.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Connected Services\eShopServiceReference\CatalogService3.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Connected Services\eShopServiceReference\eShopWinForms.eShopServiceReference.CatalogBrand.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\eShopServiceReference\eShopWinForms.eShopServiceReference.CatalogItem.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\eShopServiceReference\eShopWinForms.eShopServiceReference.CatalogType.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\eShopServiceReference\eShopWinForms.eShopServiceReference.DiscountItem.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
     <None Include="packages.config" />
     <None Include="Properties\DataSources\eShopServiceLibrary.CatalogBrand.datasource" />
     <None Include="Properties\DataSources\eShopServiceLibrary.CatalogItem.datasource" />
@@ -255,17 +225,9 @@
     <Content Include="Assets\Wide310x150Logo.scale-150.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
     <Content Include="Assets\Wide310x150Logo.scale-400.png" />
-    <None Include="Connected Services\eShopServiceReference\Reference.svcmap">
-      <Generator>WCF Proxy Generator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
-    <None Include="Connected Services\eShopServiceReference\configuration.svcinfo" />
-    <None Include="Connected Services\eShopServiceReference\configuration91.svcinfo" />
-    <None Include="Connected Services\eShopServiceReference\CatalogService.disco" />
+
   </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Connected Services\" />
-  </ItemGroup>
+
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
       <Visible>False</Visible>
@@ -273,9 +235,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <WCFMetadataStorage Include="Connected Services\eShopServiceReference\" />
-  </ItemGroup>
+
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
