@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Reflection;
 using System.Linq.Expressions;
-using eShopWinForms.eShopServiceReference;
+using eShopWinForms.Services;
 using System.Net.Http;
 using eShopWinForms.Controllers;
 
@@ -45,9 +45,9 @@ namespace eShopWinForms
         /*
          * Populates the gridview with catalog items and applies an appropriate discount to their price if there is one.
          */
-        public void SetCatalogItems(IEnumerable<CatalogItem> items, double discountVal)
+        public void SetCatalogItems(IEnumerable<CatalogItemDto> items, double discountVal)
         {
-            foreach (CatalogItem catalogItem in items)
+            foreach (CatalogItemDto catalogItem in items)
             {
                 double price = double.Parse(catalogItem.Price.ToString());
                 double discountPrice = price * (1 - discountVal);
@@ -62,9 +62,9 @@ namespace eShopWinForms
             }
         }
 
-        public void SetShipmentView(IEnumerable<CatalogItem> items)
+        public void SetShipmentView(IEnumerable<CatalogItemDto> items)
         {
-            foreach (CatalogItem catalogItem in items)
+            foreach (CatalogItemDto catalogItem in items)
             {
                 listBox1.Items.Add(String.Format("{0} - {1}", catalogItem.Id, catalogItem.Name));
                 productIdInput.Items.Add(catalogItem.Id);
